@@ -135,7 +135,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
+# .env uncomment in production or when you have sensitive variables
 .envrc
 .venv
 env/
@@ -205,3 +205,7 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# db
+*.db
+*.sqlite3
