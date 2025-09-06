@@ -2,7 +2,7 @@ from uuid import UUID
 from sqlalchemy import func
 from sqlmodel import Session, select
 from app.models.cliente import Cliente
-from app.core.exceptions import ClientNotFound
+from app.core.exceptions import ClienteNotFound
 
 
 def create_cliente(
@@ -35,7 +35,7 @@ def get_cliente_by_id(
 ) -> Cliente:
     cliente = session.get(Cliente, cliente_id)
     if not cliente:
-        raise ClientNotFound
+        raise ClienteNotFound
     return cliente
 
 
@@ -45,9 +45,9 @@ def update_cliente(
     cliente_in: Cliente,
 ) -> Cliente:
     cliente = get_cliente_by_id(session=session, cliente_id=cliente_id)
+
     update_data = cliente_in.model_dump(exclude_unset=True)
-    for key, value in update_data.items():
-        setattr(cliente, key, value)
+    cliente.sqlmodel_update(update_data)
 
     session.add(cliente)
     session.commit()

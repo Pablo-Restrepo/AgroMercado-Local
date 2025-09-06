@@ -5,7 +5,7 @@ from fastapi import FastAPI, status
 from sqlalchemy.exc import SQLAlchemyError
 
 
-class ClientNotFound(Exception):
+class ClienteNotFound(Exception):
     pass
 
 
@@ -22,11 +22,11 @@ def create_exception_handler(
 
 def register_all_exceptions(app: FastAPI):
     app.add_exception_handler(
-        ClientNotFound,
+        ClienteNotFound,
         create_exception_handler(
             status_code=status.HTTP_404_NOT_FOUND,
-            initial_detail={'message': 'Client not found',
-                            'error_code': 'client_not_found'},
+            initial_detail={'message': 'Cliente no encontrado',
+                            'error_code': 'cliente_no_encontrado'},
         ),
     )
 
