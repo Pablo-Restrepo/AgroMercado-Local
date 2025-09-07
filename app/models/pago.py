@@ -10,7 +10,7 @@ class MetodoPago(Enum):
     EFECTIVO = 'Efectivo'
 
 
-class Pago(SQLModel, table=True):
-    metodo: MetodoPago
-
-    pedido: 'Pedido' = Relationship(back_populates='pago')
+class Pago():
+    def __init__(self, metodo: MetodoPago, idPedido: str):
+        self.metodo = metodo
+        self.idPedido = idPedido

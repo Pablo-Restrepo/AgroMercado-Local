@@ -26,3 +26,6 @@ class Pedido(SQLModel, table=True):
 
     pago_id: UUID = Field(foreign_key='pago.id')
     pago: 'Pago' = Relationship(back_populates='pedido')
+
+
+# Si el pedido esta pago no se puede modificar
