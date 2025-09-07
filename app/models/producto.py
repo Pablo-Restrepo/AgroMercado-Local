@@ -1,8 +1,7 @@
 class Producto:
-    def __init__(self, nombre: str, precio: float, cantidad: int):
+    def __init__(self, nombre: str, precio: float):
         self.nombre = nombre
         self.precio = precio
-        self.cantidad = cantidad
         
 # Cruds
 

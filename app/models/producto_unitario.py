@@ -1,5 +1,5 @@
-from app.models.producto import Producto
-from app.models.pedido import Pedido
+from .producto import Producto
+from .pedido import Pedido
 
 class ProductoUnitario:
     def __init__(self, producto: Producto, pedido: Pedido, cantidad: int):
