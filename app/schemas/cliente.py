@@ -1,7 +1,7 @@
 from datetime import datetime
 from sqlmodel import SQLModel, Field
 
-from uuid import UUID
+from uuid import UUID, uuid4
 from datetime import datetime
 from sqlmodel import SQLModel, Field
 from pydantic import field_validator
@@ -40,8 +40,6 @@ class ClienteCreate(ClienteBase):
 
 class ClienteRead(ClienteBase):
     id: UUID
-    fecha_creacion: datetime
-    fecha_actualizacion: datetime
 
 
 class ClienteList(SQLModel):
@@ -54,3 +52,11 @@ class ClienteUpdate(ClienteBase):
     nombre: str | None
     apellido: str | None
     direccion: str | None
+
+class Cliente(SQLModel, table=True):
+    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
+    cedula: str = Field(index=True, unique=True, description="Cédula del cliente")
+    nombre: str
+    apellido: str
+    direccion: str
+

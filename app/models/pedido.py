@@ -1,9 +1,13 @@
-from uuid import UUID
-from enum import Enum
-from .base import SQLModel
-from .producto import PedidoProductoLink
-from sqlmodel import Field, Relationship
 
+# Si el pedido esta pago no se puede modificar
+
+from enum import Enum
+from .producto import Producto
+from .cliente import Cliente
+
+from .pago import Pago
+from typing import List
+from datetime import datetime
 
 class Estado(Enum):
     PENDIENTE = 'Pendiente'
@@ -11,18 +15,47 @@ class Estado(Enum):
     COMPLETADO = 'Completado'
     CANCELADO = 'Cancelado'
 
+class Pedido:
+    def __init__(self, cliente: Cliente, estado: Estado, valor_total: float,
+                  pago: Pago):
+        self.cliente = cliente
+        self.estado = estado
+        self.valor_total = valor_total
+        self.pago = pago
+        self.productos = []
+        self.fecha_pedido = datetime.now()
+    
+    def __init__(self, cliente):
+        self.cliente = cliente
+        self.estado = Estado.EN_PROCESO
+        self.pago = None
+        self.productos = []
+        self.valor_total = 0
+        self.fecha_pedido = datetime.now()
 
-class Pedido(SQLModel, table=True):
-    estado: Estado = Estado.PENDIENTE
-    valor_total: float
+    @classmethod
+    def crearPedido(cls,cliente, productos: dict[Producto,int]):
+        from .producto_unitario import ProductoUnitario
+        p = Pedido(cliente)
+        for pro in productos.keys():
+            p.productos.append(ProductoUnitario(pro,p,productos[pro]))
+            p.valor_total += pro.precio
+        return p
 
-    cliente_id: UUID = Field(foreign_key='cliente.id')
-    cliente: 'Cliente' = Relationship(back_populates='pedidos')
 
-    productos: list['Producto'] = Relationship(
-        back_populates='pedidos',
-        link_model=PedidoProductoLink
-    )
+    def agregarProductos(self, cliente, productos: dict[Producto,int]):
+        from .producto_unitario import ProductoUnitario
+        if not isinstance(cliente, Cliente):
+            raise PermissionError("Solo un cliente puede agregar productos a un pedido")
+        if cliente.cedula != self.cliente.cedula: 
+             raise PermissionError("Solo el propetario puede agregar productos a un pedido")
+        for pro in productos.keys():
+            pu = ProductoUnitario(pro,productos[pro])
+            pu.pedido = self
+            self.productos.append(pu)
+            self.valor_total += pro.precio*productos[pro]
+            
 
-    pago_id: UUID = Field(foreign_key='pago.id')
-    pago: 'Pago' = Relationship(back_populates='pedido')
+
+            
+        

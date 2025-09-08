@@ -3,7 +3,7 @@ from uuid import UUID, uuid4
 from sqlmodel import Field
 from sqlmodel import SQLModel as _SQLModel
 
-
+# Migrar a infraestructura
 class SQLModel(_SQLModel):
     id: UUID = Field(
         default_factory=uuid4,
