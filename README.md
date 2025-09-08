@@ -1,6 +1,6 @@
 # AgroMercado-Local
 
-AgroMercado-Local es una API REST construida con FastAPI y SQLModel para la gestión de clientes, pedidos, productos y pagos en un mercado local.
+AgroMercado-Local es una API REST construida con FastAPI y SQLModel para la gestión de clientes, pedidos y productos en un mercado local.
 
 En el sistema se implementaron los siguientes metodos:
    - Consultar productos
