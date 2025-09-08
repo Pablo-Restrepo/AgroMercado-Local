@@ -33,11 +33,19 @@ class PedidoRepository:
 
     def update_pedido(db: Session, pedido_id: int, pedido_data):
         pedido = db.query(Pedido).filter(Pedido.id == pedido_id).first()
-        if pedido:
-            for key, value in pedido_data.items():
-                setattr(pedido, key, value)
-            db.commit()
-            db.refresh(pedido)
+        update_data = pedido_data.model_dump(exclude_unset=True)
+        pedido.sqlmodel_update(update_data)
+
+        db.add(pedido)
+        db.commit()
+        db.refresh(pedido)
+        """
+            if pedido:
+                for key, value in pedido_data.items():
+                    setattr(pedido, key, value)
+                db.commit()
+                db.refresh(pedido)
+        """
         return pedido
 
     def delete_pedido(db: Session, pedido_id: int):
@@ -61,4 +69,9 @@ class PedidoRepository:
     @staticmethod
     def get_productos_unitarios_por_pedido(db: Session, pedido_id: int):
         return db.query(ProductoUnitario).filter(ProductoUnitario.pedido_id == pedido_id).all()
+    
+    @staticmethod
+    def delete_productos_unitarios_por_pedido(db: Session, pedido_id: int):
+        db.query(ProductoUnitario).filter(ProductoUnitario.pedido_id == pedido_id).delete(synchronize_session=False)
+        db.commit()
 

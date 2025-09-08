@@ -28,11 +28,8 @@ class PedidoList(SQLModel):
     data: list[PedidoRead]
     count: int
 
-class PedidoUpdate(PedidoBase):
-    cliente_cedula: str | None
-    fecha_pedido: datetime | None
-    estado: str | None
-    total: float | None
+class PedidoUpdate(SQLModel):
+    productos: dict[str, int] = {} 
 
 class Pedido(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)

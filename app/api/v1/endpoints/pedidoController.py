@@ -1,5 +1,6 @@
 from uuid import UUID
 from fastapi import APIRouter
+from fastapi import HTTPException
 from app.api.deps import SessionDep
 from app.models.pedido import Pedido
 from app.schemas.pedido import PedidoRead, PedidoCreate, PedidoUpdate, PedidoList
@@ -13,7 +14,10 @@ def create_pedido(
     session: SessionDep,
     pedido_in: PedidoCreate, cedula_cli: str
 ) -> PedidoRead:
-    return PedidoService.crear_pedido(session, pedido_in, cedula_cli)
+    try:
+        return PedidoService.crear_pedido(session, pedido_in, cedula_cli)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @router.get('/', response_model=PedidoList)
 def get_pedidos(
@@ -29,15 +33,21 @@ def get_pedido_by_id(
     session: SessionDep,
     pedido_id: UUID,
 ) -> PedidoRead:
+    
     return PedidoService.obtener_pedido(session, pedido_id)
 
-@router.put('/{pedido_id}', response_model=PedidoRead)
+@router.put('/{cedula_cli}/{pedido_id}/actualizar', response_model=PedidoRead)
 def update_pedido(
     session: SessionDep,
     pedido_id: UUID,
-    pedido_in: PedidoUpdate
+    pedido_in: PedidoUpdate, 
+    cedula_cli: str
 ) -> PedidoRead:
-    return PedidoService.actualizar_pedido(session, pedido_id, pedido_in.dict(exclude_unset=True))
+    try:
+        return PedidoService.actualizar_pedido(session, pedido_id, pedido_in.dict(exclude_unset=True), cedula_cli)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+   
 
 @router.delete('/{pedido_id}', response_model=PedidoRead)
 def delete_pedido(
