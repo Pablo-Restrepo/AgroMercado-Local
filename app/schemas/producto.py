@@ -1,5 +1,5 @@
-from sqlmodel import SQLModel, Field
-from typing import Optional
+from sqlmodel import SQLModel, Field,Relationship
+from typing import Optional, List
 from uuid import UUID, uuid4
 
 class ProductoBase(SQLModel):

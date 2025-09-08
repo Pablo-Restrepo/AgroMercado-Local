@@ -5,19 +5,25 @@ from ..schemas.pedido import Pedido
 from ..schemas.producto_unitario import ProductoUnitario
 
 class PedidoRepository:
-   def get_pedido(db: Session, pedido_id: UUID):
-    return (
-        db.exec(
-            select(Pedido)
-            .where(Pedido.id == pedido_id)
-            .options(selectinload(Pedido.productos_unitarios))
-        )
-        .scalars()            # 👈 Extrae los objetos Pedido, no los Row
-        .first()              # 👈 Devuelve el primero (o None)
-    )
+    def get_pedido(db: Session, pedido_id: UUID):
+        return (
+            db.exec(
+                select(Pedido)
+                .where(Pedido.id == pedido_id)
+                .options(selectinload(Pedido.productos_unitarios))
+            )
+            .scalars()        
+            .first())
 
-    def get_pedidos(db: Session, skip: int = 0, limit: int = 100):
-        return db.query(Pedido).offset(skip).limit(limit).all()
+    def get_pedidos(db: Session) -> list[Pedido]:
+        return (
+            db.exec(
+                select(Pedido)
+                .options(selectinload(Pedido.productos_unitarios))
+            )
+            .scalars()   
+            .all()       
+        )
 
     def create_pedido(db: Session, pedido: Pedido):
         db.add(pedido)

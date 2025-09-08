@@ -11,18 +11,22 @@ from .producto_service import ProductoService
 from ..schemas.pedido import Pedido as PedidoSchema
 class PedidoService:
     
-
-    def obtener_pedido(db: Session, pedido_id: int):
+    @classmethod
+    def obtener_pedido(cls,db: Session, pedido_id: int):
         pedido_final= PedidoRepository.get_pedido(db, pedido_id)
         pedido_read = PedidoRead.model_validate(pedido_final, from_attributes=True)
         return pedido_read
 
-    def obtener_pedidos(db: Session, skip: int = 0, limit: int = 100):
-        pedido_final = PedidoRepository.get_pedidos(db, skip, limit)
-        pedido_read = PedidoRead.model_validate(pedido_final, from_attributes=True)
-        return pedido_read
+    @classmethod
+    def obtener_pedidos(cls, db: Session, skip: int = 0, limit: int = 100):
+        pedidos = PedidoRepository.get_pedidos(db)
+        # Validar cada pedido individualmente
+        pedidos_read = [PedidoRead.model_validate(p, from_attributes=True) for p in pedidos]
+        return pedidos_read
 
-    def crear_pedido(db: Session, pedido: PedidoCreate, cliente_cedula: str):
+
+    @classmethod
+    def crear_pedido(cls, db: Session, pedido: PedidoCreate, cliente_cedula: str):
         #Comprobar que el cliente existe
         cliente = ClienteService.obtener_cliente_por_cedula(db, cliente_cedula)
         if not cliente:
@@ -49,22 +53,23 @@ class PedidoService:
         pedido_schema = PedidoSchema.from_model(p)
         #Almacenar el pedido en la base de datos
         pedido_final = PedidoRepository.create_pedido(db, pedido_schema)
-        pedido_read = PedidoRead.model_validate(pedido_final, from_attributes=True)
         #Almacenar los productos unitarios en la base de datos
         for pro,cant in dic_productos.items():
             producto_unitario = ProductoUnitarioSchema(producto_id=pro_id[pro.nombre], pedido_id=pedido_final.id, cantidad=cant)
             #agregar el producto unitario al pedido_read
-            #pedido_read.listado_productos.append(producto_unitario)
             PedidoRepository.create_producto_unitario(db, producto_unitario)
-        return pedido_read
-
-    def actualizar_pedido(db: Session, pedido_id: int, pedido_data):
+        return PedidoService.obtener_pedido(db, pedido_final.id)
+    
+    @classmethod
+    def actualizar_pedido(cls,db: Session, pedido_id: int, pedido_data):
         return PedidoRepository.update_pedido(db, pedido_id, pedido_data)
 
-    def eliminar_pedido(db: Session, pedido_id: int):
+    @classmethod
+    def eliminar_pedido(cls, db: Session, pedido_id: int):
         return PedidoRepository.delete_pedido(db, pedido_id)
 
-    def obtener_pedidos_por_cedula(db: Session, cedula: str):
+    @classmethod
+    def obtener_pedidos_por_cedula(cls, db: Session, cedula: str):
          pedido_final = PedidoRepository.get_pedidos_por_cedula(db, cedula)
          pedido_read = PedidoRead.model_validate(pedido_final, from_attributes=True)
          return pedido_read
