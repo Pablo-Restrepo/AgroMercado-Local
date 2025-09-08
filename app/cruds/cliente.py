@@ -1,7 +1,7 @@
 from uuid import UUID
 from sqlalchemy import func
 from sqlmodel import Session, select
-from app.models.cliente import Cliente
+from ..schemas.cliente import Cliente
 from app.core.exceptions import ClienteNotFound
 
 
@@ -63,3 +63,7 @@ def delete_cliente(
     session.delete(cliente)
     session.commit()
     return cliente
+
+def get_cliente_by_cedula(session: Session, cedula: str) -> Cliente | None:
+    stmt = select(Cliente).where(Cliente.cedula == cedula)
+    return session.exec(stmt).first()

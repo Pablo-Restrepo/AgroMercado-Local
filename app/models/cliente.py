@@ -1,5 +1,4 @@
 from .producto import Producto
-from .pedido import Pedido
 from typing import List
 
 class Cliente:
@@ -10,6 +9,7 @@ class Cliente:
         self.direccion = direccion
 
     def crear_pedido(self, lista_productos: dict[Producto, int]):
+        from .pedido import Pedido
         return Pedido.crearPedido(self,lista_productos)
 
     #def pagar_pedido():

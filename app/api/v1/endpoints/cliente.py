@@ -3,8 +3,7 @@ from fastapi import APIRouter
 from app.api.deps import SessionDep
 from app.models.cliente import Cliente
 from app.schemas.cliente import ClienteRead, ClienteCreate, ClienteUpdate, ClienteList
-from app.cruds import cliente as crud
-
+from ....application.cliente_service import ClienteService
 router = APIRouter(prefix='/clientes', tags=['clientes'])
 
 
@@ -14,7 +13,7 @@ def create_cliente(
     cliente_in: ClienteCreate
 ) -> ClienteRead:
     cliente = Cliente.model_validate(cliente_in)
-    return crud.create_cliente(session=session, cliente=cliente)
+    return ClienteService.crear_cliente(session=session, cliente=cliente)
 
 
 @router.get('/', response_model=ClienteList)
@@ -23,7 +22,7 @@ def get_clientes(
     skip: int = 0,
     limit: int = 100,
 ) -> ClienteList:
-    clientes, count = crud.get_clientes(
+    clientes, count = ClienteService.obtener_clientes(
         session=session,
         skip=skip,
         limit=limit
@@ -36,7 +35,7 @@ def get_cliente_by_id(
     session: SessionDep,
     cliente_id: UUID,
 ) -> ClienteRead:
-    return crud.get_cliente_by_id(session=session, cliente_id=cliente_id)
+    return ClienteService.obtener_cliente_por_id(session=session, cliente_id=cliente_id)
 
 
 @router.put('/{cliente_id}', response_model=ClienteRead)
@@ -45,7 +44,7 @@ def update_cliente(
     cliente_id: UUID,
     cliente_in: ClienteUpdate
 ) -> ClienteRead:
-    return crud.update_cliente(
+    return ClienteService.actualizar_cliente(
         session=session,
         cliente_id=cliente_id,
         cliente_in=cliente_in
@@ -57,4 +56,16 @@ def delete_cliente(
     session: SessionDep,
     cliente_id: UUID
 ) -> ClienteRead:
-    return crud.delete_cliente(session=session, cliente_id=cliente_id)
+    return ClienteService.eliminar_cliente(session=session, cliente_id=cliente_id)
+
+@router.get('/cedula/{cedula}', response_model=ClienteRead)
+def get_cliente_by_cedula(
+    session: SessionDep,
+    cedula: str
+) -> ClienteRead:
+    cliente = ClienteService.obtener_cliente_por_cedula(session, cedula)
+    if not cliente:
+        # Puedes lanzar una excepción personalizada si lo deseas
+        from app.core.exceptions import ClienteNotFound
+        raise ClienteNotFound
+    return cliente
