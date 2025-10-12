@@ -1,0 +1,5 @@
+alchemy
+pydantic
+pydantic-settings
+alembic
+fastapi
