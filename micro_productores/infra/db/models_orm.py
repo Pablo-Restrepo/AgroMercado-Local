@@ -9,17 +9,16 @@ class GremioORM(Base):
     __tablename__ = "Gremio"
     id = Column(String, primary_key=True)
     nombre = Column(String, unique=True, nullable=False)
-    creado_en = Column(DateTime, default=datetime.now(datetime.timezone.utc))
+    creado_en = Column(DateTime, default=datetime.now())
 
     productores = relationship("ProductorORM", back_populates="gremio")
 
 class ProductorORM(Base):
     __tablename__ = "Productor"
     id = Column(String, primary_key=True)
-    codigo = Column(String, nullable=False)
-    persona_id = Column(String, nullable=False)
-    rol = Column(String, nullable=False, default="None")
+    codigo = Column(String, nullable=False, unique=True)
+    rol = Column(String, nullable=False, default="NONE")
     gremio_id = Column(String, ForeignKey("Gremio.id"), nullable=False)
-    creado_en = Column(DateTime, default=datetime.now(datetime.timezone.utc))
+    creado_en = Column(DateTime, default=datetime.now())
 
     gremio = relationship("GremioORM", back_populates="productores")

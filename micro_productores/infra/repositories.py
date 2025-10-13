@@ -5,7 +5,8 @@ from domain.models import Productor, Gremio
 from domain.repository import IProductorRepository, IGremioRepository
 from infra.db.models_orm import ProductorORM, GremioORM
 from infra.db.base import async_session
-from logging import logger
+from infra.logging import logger
+
 class GremioRepositorySQL(IGremioRepository):
     async def agregar_gremio(self, gremio: Gremio):
         async with async_session() as session:
@@ -20,8 +21,9 @@ class GremioRepositorySQL(IGremioRepository):
                 select(GremioORM)
             )
             gremios_orm = result.fetchall()
+            gremios = [row[0] for row in gremios_orm]
             logger.info(f"Gremios obtenidos: {len(gremios_orm)}")
-            return [Gremio(id=row.id, nombre=row.nombre) for row in gremios_orm]
+            return [Gremio(id=row.id, nombre=row.nombre) for row in gremios]
 
     async def obtener_gremio_por_id(self, id) -> Gremio:
         async with async_session() as session:
@@ -44,6 +46,7 @@ class GremioRepositorySQL(IGremioRepository):
     async def obtener_productores_por_gremio(self, id_gremio) -> list[Productor]:
         async with async_session() as session:
             orm = await session.get(GremioORM, id_gremio)
+            logger.info(f"Obteniendo productores para gremio: {orm}")
             if orm:
                 return [
                     Productor(
@@ -60,16 +63,20 @@ class GremioRepositorySQL(IGremioRepository):
 class ProductorRepositorySQL(IProductorRepository):
     async def agregar_productor(self, productor: Productor):
         async with async_session() as session:
-            nuevo_productor = ProductorORM(
-                id=productor.id,
-                codigo=productor.codigo,
-                persona_id=productor.id,
-                rol=productor.rol if productor.rol else "None",
-                gremio_id=productor.id_gremio if productor.id_gremio else "None",
-            )
-            session.add(nuevo_productor)
-            await session.commit()
-            logger.info(f"Productor agregado: {productor.codigo}")
+            try:    
+                nuevo_productor = ProductorORM(
+                    id=productor.id,
+                    codigo=productor.codigo,                    
+                    rol=productor.rol if productor.rol else "None",
+                    gremio_id=productor.id_gremio if productor.id_gremio else "None",
+                )
+                session.add(nuevo_productor)
+                await session.commit()
+                logger.info(f"Productor agregado: {productor.codigo}")
+            except Exception as e:
+                await session.rollback()
+                logger.error(f"Error al agregar productor: {e}")
+                raise
 
     async def obtener_productores(self) -> list[Productor]:
         async with async_session() as session:
@@ -77,17 +84,18 @@ class ProductorRepositorySQL(IProductorRepository):
                 select(ProductorORM)
             )
             productores_orm = result.fetchall()
+            productores = [row[0] for row in productores_orm]
             logger.info(f"Productores obtenidos: {len(productores_orm)}")
             return [
                 Productor(
                     id=row.id,
                     codigo=row.codigo,
-                    nombres="",  # TO DO: Fetch from Persona service
-                    apellidos="",  # TO DO: Fetch from Persona service
+                    nombres=row.nombres,  # TO DO: Fetch from Persona service
+                    apellidos=row.apellidos,  # TO DO: Fetch from Persona service
                     id_gremio=row.gremio_id if row.gremio_id != "None" else None,
                     rol=row.rol if row.rol != "None" else None,
                 )
-                for row in productores_orm
+                for row in productores
             ]
 
     async def obtener_productor_por_id(self, id) -> Productor:

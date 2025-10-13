@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     VERSION: str = '1.0.0'
 
     model_config = ConfigDict(
-        env_file='.venv',
+        env_file='.env',
         extra='ignore'
     )
 

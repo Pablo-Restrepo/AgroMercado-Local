@@ -18,22 +18,31 @@ class Productor(Persona):
         self.id_gremio = id_gremio
         #Puede ser 'ADMIN','MIEMBRO' o None
         self.rol = rol
+        self.es_activo = True
     #Métodos de negocio
-    #TO DO
+    def eliminar_productor(self):
+        self.es_activo = False
+        self.id_gremio = None
+        self.rol = None
+    
 class Gremio:
     #TO DO: Definir si es necesario que el gremio contenga una lista de productores o 
     # si es mejor tener solo sus ids
     def __init__(self, id, nombre, productores:List[Productor] = None):
+        if not id or not nombre:
+            raise ValueError("Todos los campos son obligatorios")
         self.id = id
         self.nombre = nombre
         self.productores = productores if productores is not None else []
+        self.es_activo = True
+
     #Métodos de negocio    
     def agregar_productor(self, productor:Productor):
         if any(p.id == productor.id for p in self.productores):
             raise ValueError("El productor ya pertenece al gremio")
         self.productores.append(productor)
         productor.id_gremio = self.id
-        productor.rol = 'MIEMBRO'
+        productor.rol = 'MIEMBRO'        
 
     def remover_productor(self, productor:Productor):
         self.productores = [p for p in self.productores if p.id != productor.id]

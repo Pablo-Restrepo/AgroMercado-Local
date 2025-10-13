@@ -1,6 +1,7 @@
 from fastapi import FastAPI
-from api.v1.productor_router import productor_router
-from api.v1.gremio_router import gremio_router
+from fastapi.responses import RedirectResponse
+from api.v1.gremio_controller import router as gremio_controller 
+from api.v1.productor_controller import router as productor_controller 
 #from infra.messaging import RabbitPublisher
 from config import settings
 
@@ -20,5 +21,8 @@ async def lifespan(app: FastAPI):
 """
 #Incluir "lifespan=lifespan" cuando se implemente RabbitMQ
 app = FastAPI(title="Microservicio de Productores", version="1.0.0")
-app.include_router(productor_router, prefix="/api/v1/productores", tags=["Productores"])
-app.include_router(gremio_router, prefix="/api/v1/gremios", tags=["Gremios"])
+app.include_router(productor_controller)
+app.include_router(gremio_controller)
+@app.get('/', include_in_schema=False)
+def redirect_to_docs():
+    return RedirectResponse(url='/docs')
