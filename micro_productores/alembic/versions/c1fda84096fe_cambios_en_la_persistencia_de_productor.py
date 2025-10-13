@@ -1,8 +1,8 @@
-"""segunda prueba
+"""cambios en la persistencia de productor
 
-Revision ID: b4fe403f593a
-Revises: 72e35b55d090
-Create Date: 2025-10-12 20:24:34.530300
+Revision ID: c1fda84096fe
+Revises: 
+Create Date: 2025-10-13 10:12:26.321537
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'b4fe403f593a'
-down_revision: Union[str, Sequence[str], None] = '72e35b55d090'
+revision: str = 'c1fda84096fe'
+down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -31,8 +31,11 @@ def upgrade() -> None:
     op.create_table('Productor',
     sa.Column('id', sa.String(), nullable=False),
     sa.Column('codigo', sa.String(), nullable=False),
-    sa.Column('rol', sa.String(), nullable=False),
+    sa.Column('nombres', sa.String(), nullable=False),
+    sa.Column('apellidos', sa.String(), nullable=False),
+    sa.Column('es_activo', sa.String(), nullable=False),
     sa.Column('gremio_id', sa.String(), nullable=False),
+    sa.Column('rol', sa.String(), nullable=False),
     sa.Column('creado_en', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['gremio_id'], ['Gremio.id'], ),
     sa.PrimaryKeyConstraint('id'),

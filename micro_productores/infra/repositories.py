@@ -31,11 +31,13 @@ class GremioRepositorySQL(IGremioRepository):
             if orm:
                 productores = [
                 Productor(
-                    id=p.id,
-                    persona_id=p.persona_id,
+                    id=p.id,                    
                     codigo=p.codigo,
+                    nombres=p.nombres,
+                    apellidos=p.apellidos,
+                    id_gremio=orm.id,
                     rol=p.rol,
-                    gremio_id=orm.id,
+                    es_activo=p.es_activo == "TRUE"
                 )
                 for p in orm.productores
                 ]
@@ -50,11 +52,13 @@ class GremioRepositorySQL(IGremioRepository):
             if orm:
                 return [
                     Productor(
-                        id=p.id,
-                        persona_id=p.persona_id,
+                        id=p.id,                
                         codigo=p.codigo,
+                        nombres=p.nombres,
+                        apellidos=p.apellidos,
+                        id_gremio=orm.id,
                         rol=p.rol,
-                        gremio_id=orm.id,
+                        es_activo=p.es_activo == "TRUE"
                     )
                     for p in orm.productores
                 ]
@@ -66,9 +70,12 @@ class ProductorRepositorySQL(IProductorRepository):
             try:    
                 nuevo_productor = ProductorORM(
                     id=productor.id,
-                    codigo=productor.codigo,                    
+                    codigo=productor.codigo, 
+                    nombres=productor.nombres,
+                    apellidos=productor.apellidos,                   
                     rol=productor.rol if productor.rol else "None",
                     gremio_id=productor.id_gremio if productor.id_gremio else "None",
+                    es_activo="TRUE" if productor.es_activo else "FALSE"
                 )
                 session.add(nuevo_productor)
                 await session.commit()
@@ -90,10 +97,11 @@ class ProductorRepositorySQL(IProductorRepository):
                 Productor(
                     id=row.id,
                     codigo=row.codigo,
-                    nombres=row.nombres,  # TO DO: Fetch from Persona service
-                    apellidos=row.apellidos,  # TO DO: Fetch from Persona service
+                    nombres=row.nombres,  
+                    apellidos=row.apellidos,
                     id_gremio=row.gremio_id if row.gremio_id != "None" else None,
                     rol=row.rol if row.rol != "None" else None,
+                    es_activo=row.es_activo == "TRUE"
                 )
                 for row in productores
             ]
@@ -105,10 +113,11 @@ class ProductorRepositorySQL(IProductorRepository):
                 return Productor(
                     id=orm.id,
                     codigo=orm.codigo,
-                    nombres="",  # TO DO: Fetch from Persona service
-                    apellidos="",  # TO DO: Fetch from Persona service
+                    nombres=orm.nombres,
+                    apellidos=orm.apellidos,
                     id_gremio=orm.gremio_id if orm.gremio_id != "None" else None,
                     rol=orm.rol if orm.rol != "None" else None,
+                    es_activo=orm.es_activo == "TRUE"
                 )
             logger.warning(f"Productor no encontrado: {id}")
             return None
@@ -118,6 +127,9 @@ class ProductorRepositorySQL(IProductorRepository):
             orm = await session.get(ProductorORM, productor.id)
             if orm:
                 orm.codigo = productor.codigo
+                orm.nombres = productor.nombres
+                orm.apellidos = productor.apellidos
+                orm.es_activo = "TRUE" if productor.es_activo else "FALSE"
                 orm.rol = productor.rol if productor.rol else "None"
                 orm.gremio_id = productor.id_gremio if productor.id_gremio else "None"
                 await session.commit()
@@ -129,7 +141,9 @@ class ProductorRepositorySQL(IProductorRepository):
         async with async_session() as session:
             orm = await session.get(ProductorORM, id)
             if orm:
-                await session.delete(orm)
+                orm.es_activo = "FALSE"
+                orm.gremio_id = "None"
+                orm.rol = "None"
                 await session.commit()
                 logger.info(f"Productor eliminado: {id}")
             else:

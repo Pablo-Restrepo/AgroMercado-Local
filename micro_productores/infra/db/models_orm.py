@@ -17,8 +17,11 @@ class ProductorORM(Base):
     __tablename__ = "Productor"
     id = Column(String, primary_key=True)
     codigo = Column(String, nullable=False, unique=True)
-    rol = Column(String, nullable=False, default="NONE")
+    nombres = Column(String, nullable=False)
+    apellidos = Column(String, nullable=False)
+    es_activo = Column(String, nullable=False, default="TRUE")
     gremio_id = Column(String, ForeignKey("Gremio.id"), nullable=False)
+    rol = Column(String, nullable=False, default="NONE")
     creado_en = Column(DateTime, default=datetime.now())
 
     gremio = relationship("GremioORM", back_populates="productores")

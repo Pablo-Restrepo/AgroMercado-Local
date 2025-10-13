@@ -10,7 +10,7 @@ class Persona:
         self.apellidos = apellidos
 
 class Productor(Persona):
-    def __init__(self, id, codigo, nombres, apellidos, id_gremio = None, rol = None):
+    def __init__(self, id, codigo, nombres, apellidos, id_gremio = None, rol = None, es_activo = True  ):
         super().__init__(id, nombres, apellidos)
         if not codigo:
             raise ValueError("El código es obligatorio")
@@ -18,13 +18,14 @@ class Productor(Persona):
         self.id_gremio = id_gremio
         #Puede ser 'ADMIN','MIEMBRO' o None
         self.rol = rol
-        self.es_activo = True
+        self.es_activo = es_activo
     #Métodos de negocio
     def eliminar_productor(self):
         self.es_activo = False
         self.id_gremio = None
         self.rol = None
-    
+    def es_activo(self) -> bool:
+        return self.es_activo
 class Gremio:
     #TO DO: Definir si es necesario que el gremio contenga una lista de productores o 
     # si es mejor tener solo sus ids
