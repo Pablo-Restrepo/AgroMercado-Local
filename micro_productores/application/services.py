@@ -12,7 +12,10 @@ class ProductorService:
             raise ValueError("Todos los campos son obligatorios")
         # TO DO: Validar que el código sea único (requiere acceso al repositorio)
         productor = Productor(id=id, codigo=codigo, nombres=nombres, apellidos=apellidos, id_gremio=id_gremio, rol=rol)
-        await self.productor_repo.agregar_productor(productor)
+        try:
+            await self.productor_repo.agregar_productor(productor)
+        except Exception as e:
+            raise ValueError("Error insertando el productor")
         return ProductorResponseDTO.model_validate(productor,from_attributes=True)
     async def listar_productores(self) -> list[ProductorResponseDTO]:
         productores = await self.productor_repo.obtener_productores()
@@ -34,15 +37,21 @@ class GremioService:
         self.gremio_repo = gremio_repo
         self.productor_repo = productor_repo
     # Métodos del servicio
-    async def crear_gremio(self, id, nombre) -> GremioResponseDTO:
+    async def crear_gremio(self, id_admin:int, id:int, nombre:str) -> GremioResponseDTO:
         # Validaciones de negocio
-        if not id or not nombre:
+        if not id or not nombre or not id_admin:
             raise ValueError("Todos los campos son obligatorios")
         # TO DO: Validar que el nombre sea único (requiere acceso al repositorio)
-        gremio = Gremio(id=id, nombre=nombre)
-        await self.gremio_repo.agregar_gremio(gremio)
+        try:
+            admin = await self.productor_repo.obtener_productor_por_id(id_admin)
+            gremio = admin.crear_gremio(id, nombre)
+            await self.gremio_repo.agregar_gremio(gremio)
+            await self.productor_repo.actualizar_productor(admin)
+        except Exception as e:
+            raise ValueError(f"Error creando el gremio: {e}")                                
         return GremioResponseDTO.model_validate(gremio,from_attributes=True)
-    async def agregar_productor_a_gremio(self, id_productor, id_gremio):
+    
+    async def agregar_productor_a_gremio(self, id_productor, id_gremio):        
         productor = await self.productor_repo.obtener_productor_por_id(id_productor)
         if not productor:
             raise ValueError("Productor no encontrado")
@@ -59,11 +68,16 @@ class GremioService:
         gremio = await self.gremio_repo.obtener_gremio_por_id(id_gremio)
         if not gremio:
             raise ValueError("Gremio no encontrado")
-        gremio.remover_productor(productor)
+        try:
+            gremio.remover_productor(productor)
+        except ValueError as e:
+            raise ValueError(f"No se puede remover el productor del gremio: {e}")
         await self.productor_repo.actualizar_productor(productor)
         return ProductorResponseDTO.model_validate(productor,from_attributes=True)
     async def listar_gremios(self) -> list[GremioResponseDTO]:
         gremios = await self.gremio_repo.obtener_gremios()
+        if not gremios:
+            raise ValueError("No hay gremios registrados")
         return [GremioResponseDTO.model_validate(g,from_attributes=True) for g in gremios]
     async def obtener_gremio(self, id) -> GremioResponseDTO:
         gremio = await self.gremio_repo.obtener_gremio_por_id(id)

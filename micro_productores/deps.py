@@ -5,7 +5,8 @@ from application.services import GremioService, ProductorService
 from config import Settings
 
 _singleton_publisher = None
-_singleton_repo = None
+_singleton_gremio_repo = None
+_singleton_productor_repo = None
 _singleton_service = None
 
 """def get_publisher():
@@ -15,15 +16,15 @@ _singleton_service = None
     return _singleton_publisher
 """
 def get_gremio_repo():
-    global _singleton_repo
-    if not _singleton_repo:
-        _singleton_repo = GremioRepositorySQL()
-    return _singleton_repo
+    global _singleton_gremio_repo
+    if not _singleton_gremio_repo:
+        _singleton_gremio_repo = GremioRepositorySQL()
+    return _singleton_gremio_repo
 def get_productor_repo():
-    global _singleton_repo
-    if not _singleton_repo:
-        _singleton_repo = ProductorRepositorySQL()
-    return _singleton_repo
+    global _singleton_productor_repo
+    if not _singleton_productor_repo:
+        _singleton_productor_repo = ProductorRepositorySQL()
+    return _singleton_productor_repo
 
 def get_productor_service():
     #pub = get_publisher()

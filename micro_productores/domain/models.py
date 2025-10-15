@@ -26,6 +26,13 @@ class Productor(Persona):
         self.rol = None
     def es_activo(self) -> bool:
         return self.es_activo
+    def crear_gremio(self, id_gremio, nombre_gremio):
+        if self.rol != 'ADMIN':
+            raise ValueError("Solo un productor con rol ADMIN puede crear un gremio")
+        gremio = Gremio(id=id_gremio, nombre=nombre_gremio, productores=[self])
+        self.id_gremio = id_gremio        
+        return gremio
+
 class Gremio:
     #TO DO: Definir si es necesario que el gremio contenga una lista de productores o 
     # si es mejor tener solo sus ids
@@ -47,6 +54,8 @@ class Gremio:
 
     def remover_productor(self, productor:Productor):
         self.productores = [p for p in self.productores if p.id != productor.id]
+        if productor.rol == 'ADMIN':
+            raise ValueError("No se puede remover al administrador del gremio")
         productor.id_gremio = None
         productor.rol = None
 
