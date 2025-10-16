@@ -1,5 +1,8 @@
 from fastapi import APIRouter, HTTPException, Depends
-from microservice_user.api.schemas import UsuarioRegistro, UsuarioLogin, UsuarioLoginResponse
+from microservice_user.api.schemas import (
+    UsuarioRegistro, UsuarioLogin, UsuarioLoginResponse,
+    TokenRefresh, TokenResponse
+)
 from microservice_user.application.mapper import usuario_registro_to_persona, usuario_registro_to_usuario
 from microservice_user.application.services import UsuarioService
 
@@ -39,15 +42,16 @@ def registrar_usuario(usuario_data: UsuarioRegistro,
 
 @router.post(
     "/usuarios/login",
-    summary="Validar credenciales de usuario",
+    summary="Iniciar sesión y obtener tokens JWT",
     description="""
-Valida las credenciales del usuario y retorna información básica si son correctas.
+Valida las credenciales del usuario y retorna tokens JWT si son correctas.
 - Requiere email y contraseña
 - Solo usuarios activos pueden iniciar sesión
+- Retorna access_token y refresh_token
 """,
     response_model=UsuarioLoginResponse,
     responses={
-        200: {"description": "Credenciales válidas"},
+        200: {"description": "Login exitoso con tokens JWT"},
         401: {"description": "Credenciales inválidas"}
     }
 )
@@ -64,6 +68,9 @@ def login_usuario(credentials: UsuarioLogin,
                 u_id=usuario['u_id'],
                 u_nombre_usuario=usuario['u_nombre_usuario'],
                 u_email=usuario['u_email'],
+                access_token=usuario['access_token'],
+                refresh_token=usuario['refresh_token'],
+                token_type="bearer",
                 mensaje="Login exitoso"
             )
         else:
@@ -73,5 +80,31 @@ def login_usuario(credentials: UsuarioLogin,
             )
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail="Error interno del servidor" + str(e)
+            status_code=500, detail="Error interno del servidor: " + str(e)
         )
+
+
+@router.post(
+    "/usuarios/refresh",
+    summary="Renovar access token",
+    description="Genera un nuevo access token usando el refresh token",
+    response_model=TokenResponse,
+    responses={
+        200: {"description": "Token renovado exitosamente"},
+        401: {"description": "Refresh token inválido"}
+    }
+)
+def refresh_token(token_data: TokenRefresh,
+                  usuario_service: UsuarioService = Depends(get_usuario_service)):
+    try:
+        access_token = usuario_service.refresh_access_token(
+            token_data.refresh_token)
+        return TokenResponse(
+            access_token=access_token,
+            token_type="bearer"
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail="Error interno del servidor")

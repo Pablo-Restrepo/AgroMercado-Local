@@ -1,15 +1,38 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from microservice_user.api.routes import api_router
 from microservice_user.infrastructure.db import PersonaRepository, UsuarioRepository, init_db
 from microservice_user.application.services import UsuarioService
 
-# Inicializar la base de datos
 init_db()
 
-app = FastAPI()
+app = FastAPI(
+    title="Microservicio de Usuarios",
+    description="API para gestión de usuarios y autenticación JWT",
+    version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 usuario_repository = UsuarioRepository()
 persona_repository = PersonaRepository()
 usuario_service = UsuarioService(usuario_repository, persona_repository)
 
 app.include_router(api_router)
+
+
+@app.get("/health")
+async def health_check():
+    return {
+        "status": "healthy",
+        "service": "microservice_user",
+        "version": "1.0.0"
+    }

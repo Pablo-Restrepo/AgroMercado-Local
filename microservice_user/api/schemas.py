@@ -26,4 +26,16 @@ class UsuarioLoginResponse(BaseModel):
     u_id: int
     u_nombre_usuario: str
     u_email: str
+    access_token: str
+    refresh_token: str
+    token_type: str
     mensaje: str
+
+
+class TokenRefresh(BaseModel):
+    refresh_token: str
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str

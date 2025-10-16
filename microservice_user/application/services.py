@@ -3,12 +3,14 @@ from typing import Optional, Dict, Any
 from microservice_user.domain.usuario import Usuario
 from microservice_user.domain.persona import Persona
 from microservice_user.infrastructure.db import UsuarioRepository, PersonaRepository
+from microservice_user.core.jwt_config import JWTManager
 
 
 class UsuarioService:
     def __init__(self, usuario_repository: UsuarioRepository, persona_repository: PersonaRepository):
         self.usuario_repository = usuario_repository
         self.persona_repository = persona_repository
+        self.jwt_manager = JWTManager()
 
     def registrar_usuario_y_persona(self, persona: Persona, usuario: Usuario):
         # Validaciones de dominio ya ejecutadas en los constructores
@@ -19,18 +21,51 @@ class UsuarioService:
         self.usuario_repository.save(usuario)
 
     def validar_credenciales(self, email: str, password: str):
-        """Valida las credenciales del usuario"""
+        """Valida las credenciales del usuario y genera tokens JWT"""
         result = self.usuario_repository.find_by_email_and_password(
             email, password)
         if result:
             u_id, u_nombre_usuario, u_email, u_es_activo = result
+
+            # Datos para el token
+            token_data = {
+                'sub': str(u_id),
+                'email': u_email,
+                'username': u_nombre_usuario
+            }
+
+            # Generar tokens
+            access_token = self.jwt_manager.create_access_token(
+                data=token_data)
+            refresh_token = self.jwt_manager.create_refresh_token(
+                data=token_data)
+
             return {
                 'u_id': u_id,
                 'u_nombre_usuario': u_nombre_usuario,
                 'u_email': u_email,
-                'u_es_activo': u_es_activo
+                'u_es_activo': u_es_activo,
+                'access_token': access_token,
+                'refresh_token': refresh_token
             }
         return None
+
+    def refresh_access_token(self, refresh_token: str):
+        """Genera un nuevo access token usando el refresh token"""
+        payload = self.jwt_manager.verify_token(refresh_token)
+
+        if not payload or payload.get('type') != 'refresh':
+            raise ValueError("Token de renovación inválido")
+
+        # Crear nuevo access token
+        token_data = {
+            'sub': payload.get('sub'),
+            'email': payload.get('email'),
+            'username': payload.get('username')
+        }
+
+        access_token = self.jwt_manager.create_access_token(data=token_data)
+        return access_token
 
 
 class AuthService:
