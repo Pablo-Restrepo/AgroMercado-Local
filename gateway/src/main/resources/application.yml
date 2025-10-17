@@ -7,23 +7,44 @@ spring:
   cloud:
     gateway:
       routes:
-      - id: users-microservice
-        uri: lb://users-microservice/**
-        predicates:
-          - Path=/api/users/**
-        filters:
-        - StripPrefix=2
-      - id: productors-microservice
-        uri: lb://productors-microservice
-        predicates:
-          - Path=/api/productors/**
-      - id: products-microservice
-        uri: lb://products-microservice
-        predicates:
-             - Path=/api/products/**
-      - id: sales-microservice
-        uri: lb://sales-microservice     
-        predicates:
-             - Path=/api/sales/**
-        filters:
-        - StripPrefix=2
+        - id: users-microservice
+          uri: lb://users-microservice
+          predicates:
+            - Path=/api/users/**
+          filters:
+            - StripPrefix=2
+            - name: jwtAuthenticationFilter
+              args:
+                publicEndpoints:
+                  - path: /api/auth/login
+                    methods: [POST]
+                  - path: /api/auth/register
+                    methods: [POST]
+
+        - id: productors-microservice
+          uri: lb://productors-microservice
+          predicates:
+            - Path=/api/productors/**
+          filters:
+            - StripPrefix=2
+            - name: jwtAuthenticationFilter
+
+        - id: products-microservice
+          uri: lb://products-microservice
+          predicates:
+            - Path=/api/products/**
+          filters:
+            - StripPrefix=2
+            - name: jwtAuthenticationFilter
+              args:
+                publicEndpoints:
+                  - path: /api/products/**
+                    methods: [GET]
+
+        - id: sales-microservice
+          uri: lb://sales-microservice
+          predicates:
+            - Path=/api/sales/**
+          filters:
+            - StripPrefix=2
+            - name: jwtAuthenticationFilter
