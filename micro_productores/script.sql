@@ -1,3 +1,4 @@
+DROP DATABASE IF EXISTS `micro_productores_db`;
 -- Crear la base de datos
 CREATE DATABASE IF NOT EXISTS `micro_productores_db`
   CHARACTER SET utf8mb4

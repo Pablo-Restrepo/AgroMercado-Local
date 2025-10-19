@@ -16,7 +16,7 @@ class GremioModel(SQLModel, table=True):
 class ProductorModel(SQLModel, table=True):
     __tablename__ = "productor"  # Define explícitamente el nombre de la tabla
     prod_id: Optional[int] = Field(default=None, primary_key=True)
-    prod_codigo: str = Field(max_length=50, unique=True)
+    prod_codigo: str = Field(nullable=True,default=None, max_length=50, unique=True)
     prod_nombres: str = Field(max_length=100)
     prod_apellidos: str = Field(max_length=100)
     prod_es_activo: bool = Field(default=True)

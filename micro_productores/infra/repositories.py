@@ -159,7 +159,7 @@ class ProductorRepositorySQL(IProductorRepository):
                 orm.prod_rol = (productor.rol if productor.rol else "NONE")
                 orm.gre_id = (productor.id_gremio if productor.id_gremio is not None else None)
                 await session.commit()
-                logger.info(f"Productor actualizado: {productor.codigo}")
+                logger.info(f"Productor actualizado: {productor.id}")
             else:
                 logger.warning(f"Productor no encontrado para actualizar: {productor.id}")
 
@@ -176,10 +176,10 @@ class ProductorRepositorySQL(IProductorRepository):
             else:
                 logger.warning(f"Productor no encontrado para eliminar: {id}")
     
-    async def es_codigo_existente(self, codigo: str) -> bool:
+    async def es_codigo_existente(self, codigo: str) -> bool:        
+        # Si no hay código explícito, permitir (no existe conflicto)
+        if not codigo:
+            return False
         async with async_session() as session:
-            result = await session.execute(
-                select(ProductorModel).where(ProductorModel.prod_codigo == codigo)
-            )
-            productor = result.scalars().first()
-            return productor is not None
+            result = await session.execute(select(ProductorModel).where(ProductorModel.prod_codigo == codigo))
+            return result.first() is not None

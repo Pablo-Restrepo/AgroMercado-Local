@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
 from infra.db.engine import init_db
-from micro_productores.deps import get_publisher
+from deps import get_publisher
 
 async def handle_message(payload: dict):
     # Lógica para manejar el mensaje recibido
@@ -18,10 +18,10 @@ async def handle_message(payload: dict):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Código de inicio
-    pub = get_publisher()
+    """pub = get_publisher()
     await pub.connect()
     await pub.start_consuming(handle_message)
-    app.state.rabbit_publisher = pub
+    app.state.rabbit_publisher = pub"""
     await init_db()
     try:
         # yield permite que FastAPI sirva peticiones mientras el contexto está activo

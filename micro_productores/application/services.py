@@ -9,13 +9,13 @@ class ProductorService:
         self.gremio_repo = gremio_repo
     # Métodos del servicio
     async def crear_productor(self, productorDTO: CrearProductorDTO) -> ProductorResponseDTO:
-        """Función para registrar productor (Caso de uso asociado al registro de productores en un gremio, esta acción es llevada a cabo por el admin del gremio)        """
+        """Función para registrar productor (Caso de uso asociado al registro de productores en un gremio, esta acción es llevada a cabo por el admin del gremio)        """                
         #Extraer datos del DTO
         usuario = productorDTO.usuario
         productor = productorDTO_a_productor(productorDTO)
         # Validaciones de negocio
         #Voy a quitar id_gremio solo para pruebas
-        faltantes = [f for f in ("codigo", "nombres", "apellidos","rol") if not getattr(productor, f, None)]
+        faltantes = [f for f in ("nombres", "apellidos","rol") if not getattr(productor, f, None)]
         if faltantes:
             raise ValueError(f"Campos obligatorios faltantes: {', '.join(faltantes)}")
         if await self.productor_repo.es_codigo_existente(productor.codigo):
@@ -27,7 +27,7 @@ class ProductorService:
         response = registrar_usuario(usuario)        
         if response.get("status_code") == 200:
             try:
-                await self.productor_repo.agregar_productor(productor)
+                productor.id = await self.productor_repo.agregar_productor(productor)
             except Exception as e:
                 #Se envia petición para eliminar el usuario creado
                 #eliminar_usuario_por_email(usuario.email)
@@ -64,7 +64,8 @@ class GremioService:
             admin = await self.productor_repo.obtener_productor_por_id(id_admin)
             gremio = admin.crear_gremio(gremio.nombre)            
             id_gremio = await self.gremio_repo.agregar_gremio(gremio)
-            admin.id_gremio = id_gremio
+            gremio.id = id_gremio
+            admin.id_gremio = id_gremio            
             await self.productor_repo.actualizar_productor(admin)
         except Exception as e:
             raise ValueError(f"Error creando el gremio: {e}")                                

@@ -5,7 +5,7 @@ from config import settings
 # URL debe ser async driver, p.ej. "mysql+asyncmy://user:pass@host/db" o "postgresql+asyncpg://..."
 DATABASE_URL = settings.DATABASE_URL
 
-engine = create_async_engine(DATABASE_URL, echo=True)
+engine = create_async_engine(DATABASE_URL, echo=False)
 async_session = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
 async def init_db():

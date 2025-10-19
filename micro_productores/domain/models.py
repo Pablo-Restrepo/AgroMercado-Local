@@ -8,15 +8,14 @@ class Persona:
         self.apellidos = apellidos
 
 class Productor(Persona):
-    def __init__(self, id, codigo, nombres, apellidos, id_gremio = None, rol = None, es_activo = True  ):
-        super().__init__(id, nombres, apellidos)
-        if not codigo:
-            raise ValueError("El código es obligatorio")
+    def __init__(self, id, codigo, nombres, apellidos, id_gremio = None, rol = None, es_activo = True,u_id: int = None):
+        super().__init__(id, nombres, apellidos)        
         self.codigo = codigo
         self.id_gremio = id_gremio
         #Puede ser 'ADMIN','MIEMBRO' o None
         self.rol = rol
         self.es_activo = es_activo
+        self.u_id = u_id
     #Métodos de negocio
     def eliminar_productor(self):
         self.es_activo = False
@@ -27,14 +26,14 @@ class Productor(Persona):
     def crear_gremio(self, nombre_gremio):
         if self.rol != 'ADMIN':
             raise ValueError("Solo un productor con rol ADMIN puede crear un gremio")
-        gremio = Gremio(nombre=nombre_gremio, productores=[self])        
+        gremio = Gremio(None,nombre=nombre_gremio, productores=[self])        
         return gremio
 
 class Gremio:
     #TO DO: Definir si es necesario que el gremio contenga una lista de productores o 
     # si es mejor tener solo sus ids
-    def __init__(self, id, nombre, productores:List[Productor] = None):
-        if not id or not nombre:
+    def __init__(self, id:int | None, nombre, productores:List[Productor] = None):
+        if not nombre:
             raise ValueError("Todos los campos son obligatorios")
         self.id = id
         self.nombre = nombre

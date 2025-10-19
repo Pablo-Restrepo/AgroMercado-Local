@@ -3,7 +3,7 @@ from infra.repositories import GremioRepositorySQL, ProductorRepositorySQL
 #from app.infra.messaging import RabbitPublisher
 from application.services import GremioService, ProductorService
 from config import Settings
-from micro_productores.infra.messaging import RabbitConsumer
+from infra.messaging import RabbitConsumer
 
 _singleton_publisher = None
 _singleton_gremio_repo = None

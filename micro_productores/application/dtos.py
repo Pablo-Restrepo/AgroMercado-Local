@@ -14,7 +14,8 @@ class UsuarioRegistro(BaseModel):
     persona: PersonaRegistro
     
 class CrearProductorDTO(BaseModel):    
-    codigo: str = Field(..., min_length=5,max_length=10, example="PROD123", description="Código único del productor")
+    #El codigo no es obligatorio porque se puede generar automáticamente
+    codigo: str | None = Field(None,max_length=10, example="PROD123", description="Código único del productor")
     nombres: str = Field(..., min_length=3, max_length=50, example="Juan", description="Nombres del productor")
     apellidos: str = Field(..., min_length=2, max_length=50, example="Perez", description="Apellidos del productor")
     id_gremio: int | None = Field(None, example=1, description="ID del gremio al que pertenece el productor")
@@ -28,13 +29,13 @@ class CrearGremioDTO(BaseModel):
 
 class ProductorResponseDTO(BaseModel):
     id: int
-    codigo: str
+    codigo: str | None
     nombres: str
     apellidos: str
     id_gremio: int | None
     rol: str | None
     es_activo: bool
-    u_id: int
+    u_id: int | None
 
 class GremioResponseDTO(BaseModel):
     id: int
