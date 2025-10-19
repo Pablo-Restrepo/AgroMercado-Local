@@ -81,7 +81,7 @@ def login_usuario(credentials: UsuarioLogin,
     except Exception as e:
         raise HTTPException(
             status_code=500, detail="Error interno del servidor: " + str(e)
-        )
+        ) from e
 
 
 @router.post(
@@ -104,7 +104,7 @@ def refresh_token(token_data: TokenRefresh,
             token_type="bearer"
         )
     except ValueError as e:
-        raise HTTPException(status_code=401, detail=str(e))
+        raise HTTPException(status_code=401, detail=str(e)) from e
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail="Error interno del servidor")
+            status_code=500, detail="Error interno del servidor") from e

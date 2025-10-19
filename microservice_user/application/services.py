@@ -2,7 +2,7 @@ import httpx
 from typing import Optional, Dict, Any
 from microservice_user.domain.usuario import Usuario
 from microservice_user.domain.persona import Persona
-from microservice_user.infrastructure.db import UsuarioRepository, PersonaRepository
+from microservice_user.domain.repositories import IUsuarioRepository, IPersonaRepository
 from microservice_user.core.jwt_config import JWTManager
 
 
@@ -39,15 +39,17 @@ class UsuarioService:
 
         # Asignar el ID de persona al usuario
         usuario.p_id = p_id
+
+        # Guardar usuario
         self.usuario_repository.save(usuario)
 
     def validar_credenciales(self, email: str, password: str):
         """Valida las credenciales del usuario y genera tokens JWT"""
         result = self.usuario_repository.find_by_email_and_password(
             email, password)
-        if result:
-            u_id, u_nombre_usuario, u_email, u_es_activo = result
 
+        if result:
+            u_id, u_nombre_usuario, u_email = result
             # Datos para el token
             token_data = {
                 'sub': str(u_id),
@@ -55,7 +57,6 @@ class UsuarioService:
                 'username': u_nombre_usuario
             }
 
-            # Generar tokens
             access_token = self.jwt_manager.create_access_token(
                 data=token_data)
             refresh_token = self.jwt_manager.create_refresh_token(
@@ -65,7 +66,6 @@ class UsuarioService:
                 'u_id': u_id,
                 'u_nombre_usuario': u_nombre_usuario,
                 'u_email': u_email,
-                'u_es_activo': u_es_activo,
                 'access_token': access_token,
                 'refresh_token': refresh_token
             }
