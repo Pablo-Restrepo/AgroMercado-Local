@@ -24,14 +24,16 @@ class ProductorService:
             gremio = await self.gremio_repo.obtener_gremio_por_id(productor.id_gremio)
             if not gremio:
                 raise ValueError("El gremio asociado no existe")
-        response = registrar_usuario(usuario)        
-        if response.get("status_code") == 200:
+        response = registrar_usuario(usuario)
+        print(response)
+        if response.get("status") == "success":
             try:
+                productor.u_id = response.get("data").get("u_id")
                 productor.id = await self.productor_repo.agregar_productor(productor)
             except Exception as e:
                 #Se envia petición para eliminar el usuario creado
                 #eliminar_usuario_por_email(usuario.email)
-                raise ValueError("Error insertando el productor")
+                raise ValueError("Error insertando el productor",e)
             return ProductorResponseDTO.model_validate(productor,from_attributes=True)
         else:
             raise ValueError("Error registrando el usuario asociado al productor")

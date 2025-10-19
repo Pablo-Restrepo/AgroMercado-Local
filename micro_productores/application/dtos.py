@@ -15,9 +15,7 @@ class UsuarioRegistro(BaseModel):
     
 class CrearProductorDTO(BaseModel):    
     #El codigo no es obligatorio porque se puede generar automáticamente
-    codigo: str | None = Field(None,max_length=10, example="PROD123", description="Código único del productor")
-    nombres: str = Field(..., min_length=3, max_length=50, example="Juan", description="Nombres del productor")
-    apellidos: str = Field(..., min_length=2, max_length=50, example="Perez", description="Apellidos del productor")
+    codigo: str | None = Field(None,max_length=10, example="PROD123", description="Código único del productor")    
     id_gremio: int | None = Field(None, example=1, description="ID del gremio al que pertenece el productor")
     rol: str | None = Field(default="NONE", pattern="^(ADMIN|MIEMBRO|NONE)$", example="MIEMBRO", description="Rol del productor en el gremio (si pertenece a uno)")
     #Se asocia el usuario para capturar los datos que posteriormente se van

@@ -6,8 +6,8 @@ def productorDTO_a_productor(dto: CrearProductorDTO) -> Productor:
     return Productor(
         id=None,
         codigo=dto.codigo,
-        nombres=dto.nombres,
-        apellidos=dto.apellidos,
+        nombres=dto.usuario.persona.p_nombre,
+        apellidos=dto.usuario.persona.p_apellido,
         id_gremio=dto.id_gremio,
         rol=dto.rol
     )
