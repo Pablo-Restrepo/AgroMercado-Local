@@ -10,13 +10,14 @@ from sqlalchemy.orm import selectinload
 
 # Repositorio para gremios usando SQLModel (async)
 class GremioRepositorySQL(IGremioRepository):
-    async def agregar_gremio(self, gremio: Gremio):
+    async def agregar_gremio(self, gremio: Gremio) -> int:
         async with async_session() as session:
             gremio_model = GremioModel(gre_nombre=gremio.nombre)
             session.add(gremio_model)
             await session.commit()
-            await session.refresh(gremio_model)
+            await session.refresh(gremio_model)            
             logger.info(f"Gremio agregado: {gremio.nombre} (id={gremio_model.gre_id})")
+            return gremio_model.gre_id
 
     async def obtener_gremios(self) -> list[Gremio]:
         async with async_session() as session:

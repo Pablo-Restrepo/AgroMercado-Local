@@ -9,21 +9,26 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
 from infra.db.engine import init_db
+from micro_productores.deps import get_publisher
+
+async def handle_message(payload: dict):
+    # Lógica para manejar el mensaje recibido
+    print("Mensaje recibido:", payload)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Código de inicio
-    #pub = RabbitPublisher(settings.RABBIT_URL)
-    #await pub.connect()
-    #app.state.publisher = pub
+    pub = get_publisher()
+    await pub.connect()
+    await pub.start_consuming(handle_message)
+    app.state.rabbit_publisher = pub
     await init_db()
     try:
         # yield permite que FastAPI sirva peticiones mientras el contexto está activo
         yield
     finally:
-        pass
-    #if hasattr(app.state, "publisher"):
-    #   await app.state.publisher._conn.close()
+        if hasattr(app.state, "rabbit_publisher"):
+            await app.state.rabbit_publisher.stop()
 
 #Incluir "lifespan=lifespan" cuando se implemente RabbitMQ
 app = FastAPI(title="Microservicio de Productores", version="1.0.0",lifespan=lifespan)

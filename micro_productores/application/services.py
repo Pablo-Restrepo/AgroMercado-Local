@@ -1,5 +1,5 @@
 from domain.repository import IGremioRepository, IProductorRepository
-from application.dtos import CrearProductorDTO, GremioResponseDTO, ProductorResponseDTO
+from application.dtos import CrearProductorDTO, GremioResponseDTO, ProductorResponseDTO, CrearGremioDTO
 from application.mapper import productorDTO_a_productor
 from application.usuario_service import registrar_usuario, eliminar_usuario_por_email
 
@@ -50,20 +50,21 @@ class ProductorService:
         productor.eliminar_productor()
         await self.productor_repo.actualizar_productor(productor)
         return ProductorResponseDTO.model_validate(productor,from_attributes=True)
-class GremioService:
+class GremioService:    
     def __init__(self, gremio_repo: IGremioRepository, productor_repo: IProductorRepository):
         self.gremio_repo = gremio_repo
         self.productor_repo = productor_repo
     # Métodos del servicio
-    async def crear_gremio(self, id_admin:int, id:int, nombre:str) -> GremioResponseDTO:
+    async def crear_gremio(self, id_admin:int, gremio:CrearGremioDTO) -> GremioResponseDTO:
         # Validaciones de negocio
-        if not id or not nombre or not id_admin:
+        if not id_admin or not gremio.nombre:
             raise ValueError("Todos los campos son obligatorios")
-        # TO DO: Validar que el nombre sea único (requiere acceso al repositorio)
+        
         try:
             admin = await self.productor_repo.obtener_productor_por_id(id_admin)
-            gremio = admin.crear_gremio(id, nombre)
-            await self.gremio_repo.agregar_gremio(gremio)
+            gremio = admin.crear_gremio(gremio.nombre)            
+            id_gremio = await self.gremio_repo.agregar_gremio(gremio)
+            admin.id_gremio = id_gremio
             await self.productor_repo.actualizar_productor(admin)
         except Exception as e:
             raise ValueError(f"Error creando el gremio: {e}")                                
