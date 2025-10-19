@@ -1,110 +1,191 @@
-import sqlite3
-import hashlib
-import os
-from microservice_user.infrastructure.db_config import DATABASE_URL
+from typing import Optional
+from sqlmodel import Session, select
+from sqlalchemy.exc import IntegrityError
+from microservice_user.domain.repositories import IPersonaRepository, IUsuarioRepository
+from microservice_user.domain.persona import Persona
+from microservice_user.domain.usuario import Usuario
+from microservice_user.infrastructure.modelsSQL import PersonaModel, UsuarioModel
+from microservice_user.infrastructure.engine import engine
 
 
-def get_db_connection():
-    """Obtiene la conexión a la base de datos SQLite"""
-    db_path = DATABASE_URL.replace("sqlite:///", "")
-    conn = sqlite3.connect(db_path)
-    conn.row_factory = sqlite3.Row  # Para acceder a las columnas por nombre
-    return conn
+class PersonaRepository(IPersonaRepository):
+    """
+    Implementación del repositorio de Persona usando SQLAlchemy ORM.
+    Maneja la persistencia y recuperación de entidades Persona.
+    """
 
+    def __init__(self, db_config=None):
+        # db_config se mantiene para compatibilidad, pero usamos SQLAlchemy
+        pass
 
-def init_db():
-    """Inicializa la base de datos y crea las tablas"""
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    # Crear tabla de personas
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS persona (
-            p_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            p_cedula TEXT NOT NULL UNIQUE,
-            p_nombre TEXT NOT NULL,
-            p_apellido TEXT NOT NULL,
-            p_telefono TEXT,
-            p_direccion TEXT,
-            p_fecha_nacimiento TEXT
-        )
-    ''')
-
-    # Crear tabla de usuarios
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS usuario (
-            u_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            u_nombre_usuario TEXT NOT NULL,
-            u_contrasenia TEXT NOT NULL,
-            u_email TEXT NOT NULL,
-            u_fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            u_es_activo INTEGER DEFAULT 1,
-            p_id INTEGER,
-            FOREIGN KEY (p_id) REFERENCES persona(p_id)
-        )
-    ''')
-
-    conn.commit()
-    conn.close()
-
-
-class UsuarioRepository:
-    def save(self, usuario):
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        # Hash de la contraseña antes de guardar
-        hashed_password = self._hash_password(usuario.u_contrasenia)
-        query = "INSERT INTO usuario (u_nombre_usuario, u_contrasenia, u_email, p_id) VALUES (?, ?, ?, ?)"
-        cursor.execute(query, (usuario.u_nombre_usuario,
-                       hashed_password, usuario.u_email, usuario.p_id))
-        conn.commit()
-        conn.close()
-
-    def exists_email(self, email):
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        query = "SELECT COUNT(*) FROM usuario WHERE u_email = ?"
-        cursor.execute(query, (email,))
-        count = cursor.fetchone()[0]
-        conn.close()
-        return count > 0
-
-    def find_by_email_and_password(self, email, password):
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        hashed_password = self._hash_password(password)
-        query = """
-        SELECT u.u_id, u.u_nombre_usuario, u.u_email, u.u_es_activo 
-        FROM usuario u 
-        WHERE u.u_email = ? AND u.u_contrasenia = ? AND u.u_es_activo = 1
+    def save_persona(self, persona: Persona) -> int:
         """
-        cursor.execute(query, (email, hashed_password))
-        result = cursor.fetchone()
-        conn.close()
+        Guarda una persona utilizando SQLAlchemy ORM.
 
-        if result:
-            return tuple(result)
-        return None
+        Convierte la entidad de dominio a modelo de infraestructura,
+        la persiste en la base de datos y retorna el ID generado.
+        """
+        with Session(engine) as session:
+            # Verificar si la cédula ya existe
+            existing_persona = session.exec(
+                select(PersonaModel).where(
+                    PersonaModel.p_cedula == persona.p_cedula)
+            ).first()
 
-    def _hash_password(self, password):
-        """Hash simple de la contraseña usando SHA256"""
-        return hashlib.sha256(password.encode()).hexdigest()
+            if existing_persona:
+                raise ValueError(
+                    f"Ya existe una persona con la cédula {persona.p_cedula}")
+
+            try:
+                persona_model = PersonaModel(
+                    p_cedula=persona.p_cedula,
+                    p_apellido=persona.p_apellido,
+                    p_nombre=persona.p_nombre,
+                    p_fecha_nacimiento=persona.p_fecha_nacimiento,
+                    p_direccion=persona.p_direccion,
+                    p_telefono=persona.p_telefono
+                )
+                session.add(persona_model)
+                session.commit()
+                session.refresh(persona_model)
+                return persona_model.p_id
+            except IntegrityError as e:
+                session.rollback()
+                if "Duplicate entry" in str(e) and "P_cedula" in str(e):
+                    raise ValueError(
+                        f"Ya existe una persona con la cédula {persona.p_cedula}")
+                raise ValueError("Error al guardar la persona")
+
+    def find_by_id(self, persona_id: int) -> Optional[Persona]:
+        """
+        Busca una persona por ID y la convierte a entidad de dominio.
+        """
+        with Session(engine) as session:
+            stmt = select(PersonaModel).where(PersonaModel.p_id == persona_id)
+            persona_model = session.exec(stmt).first()
+
+            if not persona_model:
+                return None
+
+            return self._model_to_domain(persona_model)
+
+    def find_by_cedula(self, cedula: str) -> Optional[Persona]:
+        """
+        Busca una persona por cédula y la convierte a entidad de dominio.
+        """
+        with Session(engine) as session:
+            stmt = select(PersonaModel).where(PersonaModel.p_cedula == cedula)
+            persona_model = session.exec(stmt).first()
+
+            if not persona_model:
+                return None
+
+            return self._model_to_domain(persona_model)
+
+    def exists_cedula(self, cedula: str) -> bool:
+        """
+        Verifica si existe una persona con la cédula especificada.
+        """
+        with Session(engine) as session:
+            stmt = select(PersonaModel).where(PersonaModel.p_cedula == cedula)
+            persona_model = session.exec(stmt).first()
+            return persona_model is not None
+
+    def _model_to_domain(self, persona_model: PersonaModel) -> Persona:
+        """
+        Convierte un modelo de infraestructura a entidad de dominio.
+        """
+        return Persona(
+            p_id=persona_model.p_id,
+            p_cedula=persona_model.p_cedula,
+            p_apellido=persona_model.p_apellido,
+            p_nombre=persona_model.p_nombre,
+            p_fecha_nacimiento=persona_model.p_fecha_nacimiento,
+            p_direccion=persona_model.p_direccion,
+            p_telefono=persona_model.p_telefono
+        )
 
 
-class PersonaRepository:
-    def save_persona(self, persona):
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        query = "INSERT INTO persona (p_cedula, p_apellido, p_nombre, p_fecha_nacimiento, p_direccion, p_telefono) VALUES (?, ?, ?, ?, ?, ?)"
-        cursor.execute(query, (
-            persona.p_cedula,
-            persona.p_apellido,
-            persona.p_nombre,
-            persona.p_fecha_nacimiento,
-            persona.p_direccion,
-            persona.p_telefono
-        ))
-        conn.commit()
-        p_id = cursor.lastrowid
-        conn.close()
-        return p_id
+class UsuarioRepository(IUsuarioRepository):
+    """
+    Implementación del repositorio de Usuario usando SQLAlchemy ORM.
+    Maneja la persistencia y recuperación de entidades Usuario.
+    """
+
+    def __init__(self, db_config=None):
+        # db_config se mantiene para compatibilidad, pero usamos SQLAlchemy
+        pass
+
+    def save(self, usuario: Usuario) -> int:
+        """
+        Guarda un usuario utilizando SQLAlchemy ORM.
+
+        Convierte la entidad de dominio a modelo de infraestructura,
+        la persiste en la base de datos y retorna el ID generado.
+        """
+        with Session(engine) as session:
+            try:
+                usuario_model = UsuarioModel(
+                    u_nombre_usuario=usuario.u_nombre_usuario,
+                    u_contrasenia=usuario.u_contrasenia,
+                    u_email=usuario.u_email,
+                    p_id=usuario.p_id
+                )
+                session.add(usuario_model)
+                session.commit()
+                session.refresh(usuario_model)
+                usuario.u_id = usuario_model.u_id  # Actualizar el ID en la entidad
+                return usuario_model.u_id
+            except IntegrityError as e:
+                session.rollback()
+                if "Duplicate entry" in str(e) and "u_email" in str(e):
+                    raise ValueError(
+                        f"Ya existe un usuario con el email {usuario.u_email}")
+                raise ValueError("Error al guardar el usuario")
+
+    def exists_email(self, email: str) -> bool:
+        """
+        Verifica si existe un usuario con el email especificado.
+        """
+        with Session(engine) as session:
+            stmt = select(UsuarioModel).where(UsuarioModel.u_email == email)
+            usuario_model = session.exec(stmt).first()
+            return usuario_model is not None
+
+    def find_by_id(self, usuario_id: int) -> Optional[Usuario]:
+        """
+        Busca un usuario por ID y lo convierte a entidad de dominio.
+        """
+        with Session(engine) as session:
+            stmt = select(UsuarioModel).where(UsuarioModel.u_id == usuario_id)
+            usuario_model = session.exec(stmt).first()
+
+            if not usuario_model:
+                return None
+
+            return self._model_to_domain(usuario_model)
+
+    def find_by_email(self, email: str) -> Optional[Usuario]:
+        """
+        Busca un usuario por email y lo convierte a entidad de dominio.
+        """
+        with Session(engine) as session:
+            stmt = select(UsuarioModel).where(UsuarioModel.u_email == email)
+            usuario_model = session.exec(stmt).first()
+
+            if not usuario_model:
+                return None
+
+            return self._model_to_domain(usuario_model)
+
+    def _model_to_domain(self, usuario_model: UsuarioModel) -> Usuario:
+        """
+        Convierte un modelo de infraestructura a entidad de dominio.
+        """
+        return Usuario(
+            u_id=usuario_model.u_id,
+            u_nombre_usuario=usuario_model.u_nombre_usuario,
+            u_contrasenia=usuario_model.u_contrasenia,
+            u_email=usuario_model.u_email,
+            p_id=usuario_model.p_id
+        )

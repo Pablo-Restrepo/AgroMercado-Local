@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from microservice_user.api.routes import api_router
 from microservice_user.infrastructure.db import PersonaRepository, UsuarioRepository, init_db
 from microservice_user.application.services import UsuarioService
+from microservice_user.infrastructure.engine import init_db
 
 init_db()
 
