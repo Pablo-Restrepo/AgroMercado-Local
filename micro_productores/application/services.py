@@ -1,22 +1,40 @@
-from domain.models import Gremio, Productor
 from domain.repository import IGremioRepository, IProductorRepository
-from application.dtos import GremioResponseDTO, ProductorResponseDTO
+from application.dtos import CrearProductorDTO, GremioResponseDTO, ProductorResponseDTO
+from application.mapper import productorDTO_a_productor
+from application.usuario_service import registrar_usuario, eliminar_usuario_por_email
 
 class ProductorService:
-    def __init__(self, productor_repo: IProductorRepository):        
+    def __init__(self, productor_repo: IProductorRepository, gremio_repo: IGremioRepository):        
         self.productor_repo = productor_repo
+        self.gremio_repo = gremio_repo
     # Métodos del servicio
-    async def crear_productor(self, id, codigo, nombres, apellidos, id_gremio=None, rol=None) -> ProductorResponseDTO:
+    async def crear_productor(self, productorDTO: CrearProductorDTO) -> ProductorResponseDTO:
+        """Función para registrar productor (Caso de uso asociado al registro de productores en un gremio, esta acción es llevada a cabo por el admin del gremio)        """
+        #Extraer datos del DTO
+        usuario = productorDTO.usuario
+        productor = productorDTO_a_productor(productorDTO)
         # Validaciones de negocio
-        if not id or not codigo or not nombres or not apellidos:
-            raise ValueError("Todos los campos son obligatorios")
-        # TO DO: Validar que el código sea único (requiere acceso al repositorio)
-        productor = Productor(id=id, codigo=codigo, nombres=nombres, apellidos=apellidos, id_gremio=id_gremio, rol=rol)
-        try:
-            await self.productor_repo.agregar_productor(productor)
-        except Exception as e:
-            raise ValueError("Error insertando el productor")
-        return ProductorResponseDTO.model_validate(productor,from_attributes=True)
+        #Voy a quitar id_gremio solo para pruebas
+        faltantes = [f for f in ("codigo", "nombres", "apellidos","rol") if not getattr(productor, f, None)]
+        if faltantes:
+            raise ValueError(f"Campos obligatorios faltantes: {', '.join(faltantes)}")
+        if await self.productor_repo.es_codigo_existente(productor.codigo):
+            raise ValueError("El código del productor ya existe")        
+        if productor.id_gremio is not None:
+            gremio = await self.gremio_repo.obtener_gremio_por_id(productor.id_gremio)
+            if not gremio:
+                raise ValueError("El gremio asociado no existe")
+        response = registrar_usuario(usuario)        
+        if response.get("status_code") == 200:
+            try:
+                await self.productor_repo.agregar_productor(productor)
+            except Exception as e:
+                #Se envia petición para eliminar el usuario creado
+                #eliminar_usuario_por_email(usuario.email)
+                raise ValueError("Error insertando el productor")
+            return ProductorResponseDTO.model_validate(productor,from_attributes=True)
+        else:
+            raise ValueError("Error registrando el usuario asociado al productor")
     async def listar_productores(self) -> list[ProductorResponseDTO]:
         productores = await self.productor_repo.obtener_productores()
         return [ProductorResponseDTO.model_validate(p,from_attributes=True) for p in productores if p.es_activo]

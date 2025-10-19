@@ -3,8 +3,6 @@ from typing import List
 
 class Persona:
     def __init__(self, id, nombres, apellidos):
-        if not id or not nombres or not apellidos:
-            raise ValueError("Todos los campos son obligatorios")
         self.id = id
         self.nombres = nombres
         self.apellidos = apellidos

@@ -28,8 +28,9 @@ def get_productor_repo():
 
 def get_productor_service():
     #pub = get_publisher()
-    productor_repo = get_productor_repo()    
-    return ProductorService(productor_repo)
+    productor_repo = get_productor_repo()
+    gremio_repo = get_gremio_repo()
+    return ProductorService(productor_repo, gremio_repo)
 
 def get_gremio_service():
     #pub = get_publisher()

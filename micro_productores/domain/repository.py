@@ -35,3 +35,6 @@ class IProductorRepository(ABC):
     @abstractmethod
     def eliminar_productor(self, id):
         pass
+    @abstractmethod
+    def es_codigo_existente(self, codigo: str) -> bool:
+        pass
