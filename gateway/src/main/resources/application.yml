@@ -12,7 +12,6 @@ spring:
           predicates:
             - Path=/api/users/**
           filters:
-            - StripPrefix=2
             - name: jwtAuthenticationFilter
               args:
                 publicEndpoints:
@@ -26,7 +25,6 @@ spring:
           predicates:
             - Path=/api/productors/**
           filters:
-            - StripPrefix=2
             - name: jwtAuthenticationFilter
 
         - id: products-microservice
@@ -34,17 +32,14 @@ spring:
           predicates:
             - Path=/api/products/**
           filters:
-            - StripPrefix=2
             - name: jwtAuthenticationFilter
               args:
                 publicEndpoints:
                   - path: /api/products/**
                     methods: [GET]
-
         - id: sales-microservice
           uri: lb://sales-microservice
           predicates:
             - Path=/api/sales/**
           filters:
-            - StripPrefix=2
             - name: jwtAuthenticationFilter
