@@ -5,19 +5,19 @@ spring:
     gateway:
       routes:
       - id: users-microservice
-        uri: lb://users-microservice/**
+        uri: lb://users-microservice
         predicates:
-          - Path=/api/users/**
+          - Path=/usuarios/**
       - id: productors-microservice
         uri: lb://productors-microservice
         predicates:
-          - Path=/api/productors/**
+          - Path=/api/v1/productores/**,/api/v1/gremios/**
       - id: products-microservice
         uri: lb://products-microservice
         predicates:
-             - Path=/api/products/**
+             - Path=/api/**
       - id: sales-microservice
         uri: lb://sales-microservice     
         predicates:
-             - Path=/api/sales/**
+             - Path=/api/**
 
