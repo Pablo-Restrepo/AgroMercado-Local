@@ -11,8 +11,6 @@ spring:
         uri: lb://users-microservice/**
         predicates:
           - Path=/api/users/**
-        filters:
-        - StripPrefix=2
       - id: productors-microservice
         uri: lb://productors-microservice
         predicates:
@@ -25,5 +23,4 @@ spring:
         uri: lb://sales-microservice     
         predicates:
              - Path=/api/sales/**
-        filters:
-        - StripPrefix=2
+
