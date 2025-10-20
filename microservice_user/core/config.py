@@ -4,7 +4,6 @@ from pydantic import ConfigDict
 
 class Settings(BaseSettings):
     BASE_URL: str = 'http://localhost:8001'
-    DATABASE_URL: str
     PROJECT_NAME: str = 'AgroMercado-Local'
     VERSION: str = '1.0.0'
     SECRET_KEY: str

@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from microservice_user.api.routes import api_router
-from microservice_user.infrastructure.persona_repository import PersonaRepository, UsuarioRepository
+from microservice_user.infrastructure.db import PersonaRepository, UsuarioRepository
 from microservice_user.application.services import UsuarioService
-from microservice_user.infrastructure.db import init_db
+from microservice_user.infrastructure.engine import init_db
 
 init_db()
 
@@ -24,8 +24,8 @@ app.add_middleware(
 )
 
 usuario_repository = UsuarioRepository()
-persona_repository = PersonaRepository()
-usuario_service = UsuarioService(usuario_repository, persona_repository)
+db = PersonaRepository()
+usuario_service = UsuarioService(usuario_repository, db)
 
 app.include_router(api_router)
 

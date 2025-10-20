@@ -12,9 +12,9 @@ class UsuarioService:
     Coordina las operaciones entre entidades de dominio y repositorios.
     """
 
-    def __init__(self, usuario_repository: IUsuarioRepository, persona_repository: IPersonaRepository):
+    def __init__(self, usuario_repository: IUsuarioRepository, db: IPersonaRepository):
         self.usuario_repository = usuario_repository
-        self.persona_repository = persona_repository
+        self.db = db
         self.jwt_manager = JWTManager()
 
     def registrar_usuario_y_persona(self, persona: Persona, usuario: Usuario):
@@ -32,10 +32,10 @@ class UsuarioService:
         if self.usuario_repository.exists_email(usuario.u_email):
             raise ValueError("El email ya está registrado")
         # Validar si la cedula ya esta registrada
-        if self.persona_repository.exists_cedula(persona.p_cedula):
+        if self.db.exists_cedula(persona.p_cedula):
             raise ValueError("La cédula ya está registrada")
         # Guardar persona primero para obtener el ID
-        p_id = self.persona_repository.save_persona(persona)
+        p_id = self.db.save_persona(persona)
 
         # Asignar el ID de persona al usuario
         usuario.p_id = p_id
