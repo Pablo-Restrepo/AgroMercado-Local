@@ -40,14 +40,18 @@ public class jwtAuthenticationFilter extends AbstractGatewayFilterFactory<jwtAut
             String authHeader = exchange.getRequest().getHeaders().get(HttpHeaders.AUTHORIZATION).get(0);
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 authHeader = authHeader.substring(7);
-            }
-            try {
+                try {
                 jwtHandler.validateToken(authHeader);
                 return chain.filter(exchange);
             } catch (Exception e) {
                 exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                 return exchange.getResponse().setComplete();
             }
+            } else {
+                exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+                return exchange.getResponse().setComplete();
+            }
+            
         });
         
         

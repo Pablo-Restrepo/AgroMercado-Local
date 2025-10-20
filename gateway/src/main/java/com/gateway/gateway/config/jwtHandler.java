@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 public class jwtHandler {
 
     @Value("${security.jwt.secret}")
-    private static String SECRET;
+    private String SECRET;
 
     public void validateToken(final String token) {
     try {
