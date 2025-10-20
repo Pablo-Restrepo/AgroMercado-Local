@@ -19,7 +19,7 @@ spring:
         - id: sales-microservice
           uri: lb://sales-microservice     
           predicates:
-              - Path=/api/**
+              - Path=/api/sales**
           filters:
             - name: jwtAuthenticationFilter    
         - id: productors-microservice
