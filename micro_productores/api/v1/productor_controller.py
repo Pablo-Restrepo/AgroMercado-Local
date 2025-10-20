@@ -7,8 +7,8 @@ router = APIRouter(prefix="/api/v1/productores", tags=["Productores"])
 
 @router.post("/", response_model=ProductorResponseDTO, status_code=201)
 async def crear_productor(productor: CrearProductorDTO, svc : ProductorService = Depends(get_productor_service)):
-    try:
-        return await svc.crear_productor(**productor.model_dump())
+    try:        
+        return await svc.crear_productor(productor)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 @router.get("/", response_model=list[ProductorResponseDTO], status_code=200)

@@ -8,7 +8,7 @@ router = APIRouter(prefix="/api/v1/gremios", tags=["Gremios"])
 @router.post("/{id_admin}", response_model=GremioResponseDTO, status_code=201)
 async def crear_gremio(id_admin: int, gremio: CrearGremioDTO, svc : GremioService = Depends(get_gremio_service)):
     try:
-        return await svc.crear_gremio(id_admin, **gremio.model_dump())
+        return await svc.crear_gremio(id_admin, gremio)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 @router.get("/{id}", response_model=GremioResponseDTO, status_code=200)
