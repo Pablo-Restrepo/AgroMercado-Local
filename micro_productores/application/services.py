@@ -1,7 +1,7 @@
 from domain.repository import IGremioRepository, IProductorRepository
 from application.dtos import CrearProductorDTO, GremioResponseDTO, ProductorResponseDTO, CrearGremioDTO, RegistrarProductorEnGremioDTO
 from application.mapper import productorDTO_a_productor, productorDTO_a_productor_admin
-from application.usuario_service import registrar_usuario, eliminar_usuario_por_email
+from application.usuario_service import eliminar_usuario_por_id, registrar_usuario
 
 class ProductorService:
     def __init__(self, productor_repo: IProductorRepository, gremio_repo: IGremioRepository):        
@@ -31,7 +31,7 @@ class ProductorService:
                 productor.id = await self.productor_repo.agregar_productor(productor)
             except Exception as e:
                 #Se envia petición para eliminar el usuario creado
-                #eliminar_usuario_por_email(usuario.email)
+                eliminar_usuario_por_id(productor.u_id)
                 raise ValueError("Error insertando el productor",e)
             return ProductorResponseDTO.model_validate(productor,from_attributes=True)
         else:

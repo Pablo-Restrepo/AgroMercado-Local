@@ -9,24 +9,26 @@ def registrar_usuario(usuario:UsuarioRegistro):
     headers = {
         "Content-Type": "application/json"
     }
-    response = requests.post(url, json=payload, headers=headers)
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+    except requests.RequestException as e:
+        raise ValueError(f"Error al registrar usuario: {e}")
     if response.status_code != 200:
         raise ValueError(f"Error al registrar usuario: {response.text}")
     return response.json()
 
-    # Temporalmente se retorna una respuesta 200
-    return {"status_code": 200, "data": {"message": "Usuario registrado exitosamente (simulado)"}}
-def eliminar_usuario_por_email(email:str):
-    """Funcion que llama al microservicio de usuarios para eliminar un usuario por su email"""
+def eliminar_usuario_por_id(usuario_id: int):
+    """Funcion que llama al microservicio de usuarios para eliminar un usuario por su ID"""
     #TODO Tratar de incorporar el llamado al micro de usuarios por medio de Eureka
-    """url = f"http://microservice_user:8000/usuarios/eliminar/{email}"
+    url = f"http://microservice_user:8000/usuarios/{usuario_id}"
     headers = {
         "Content-Type": "application/json"
     }
-    response = requests.delete(url, headers=headers)
+    try:
+        response = requests.delete(url, headers=headers)
+    except requests.RequestException as e:
+        raise ValueError(f"Error al eliminar usuario: {e}")
     if response.status_code != 200:
         raise ValueError(f"Error al eliminar usuario: {response.text}")
-    return response.json()"""
-
-    # Temporalmente se retorna una respuesta 200
-    return {"status_code": 200, "data": {"message": "Usuario eliminado exitosamente (simulado)"}}
+    return response.json()
+    
