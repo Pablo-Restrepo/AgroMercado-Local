@@ -13,7 +13,7 @@ class UsuarioRegistro(BaseModel):
     u_email: str
     persona: PersonaRegistro
     
-class CrearProductorDTO(BaseModel):    
+class RegistrarProductorEnGremioDTO(BaseModel):    
     #El codigo no es obligatorio porque se puede generar automáticamente
     codigo: str | None = Field(None,max_length=10, example="PROD123", description="Código único del productor")    
     id_gremio: int | None = Field(None, example=1, description="ID del gremio al que pertenece el productor")
@@ -33,10 +33,14 @@ class ProductorResponseDTO(BaseModel):
     id_gremio: int | None
     rol: str | None
     es_activo: bool
-    u_id: int | None
+    u_id: int
 
 class GremioResponseDTO(BaseModel):
     id: int
     nombre: str
     productores: list[ProductorResponseDTO] = []    
 
+class CrearProductorDTO(BaseModel):
+    u_id: int
+    nombres: str
+    apellidos: str    

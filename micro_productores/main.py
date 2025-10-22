@@ -2,35 +2,44 @@ from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from api.v1.gremio_controller import router as gremio_controller 
 from api.v1.productor_controller import router as productor_controller 
-#from infra.messaging import RabbitPublisher
 from config import settings
 
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
 from infra.db.engine import init_db
-from deps import get_publisher
-
-async def handle_message(payload: dict):
-    # Lógica para manejar el mensaje recibido
-    print("Mensaje recibido:", payload)
+from deps import get_productor_service
+from application.handler import handle_create_productor_admin
+from infra.consumer_rabbitmq import RabbitConsumer
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Código de inicio
-    """pub = get_publisher()
-    await pub.connect()
-    await pub.start_consuming(handle_message)
-    app.state.rabbit_publisher = pub"""
+     # iniciar DB
     await init_db()
+
+    # crear instancia del servicio para inyectar en el handler
+    productor_service = get_productor_service()    
+
+    # configurar consumer
+    rabbit_url = settings.RABBIT_URL
+    queue = settings.QUEUE_NAME
+    consumer = RabbitConsumer(rabbit_url, queue, prefetch=5)
+    await consumer.connect()
+
+    # wrapper handler para inyectar servicio
+    async def _handler(payload: dict, message):
+        await handle_create_productor_admin(payload, message, productor_service)
+
+    await consumer.start(_handler)
+    app.state.rabbit_consumer = consumer
+
     try:
-        # yield permite que FastAPI sirva peticiones mientras el contexto está activo
         yield
     finally:
-        if hasattr(app.state, "rabbit_publisher"):
-            await app.state.rabbit_publisher.stop()
+        # parar consumer
+        await consumer.stop()
 
-#Incluir "lifespan=lifespan" cuando se implemente RabbitMQ
+
 app = FastAPI(title="Microservicio de Productores", version="1.0.0",lifespan=lifespan)
 app.include_router(productor_controller)
 app.include_router(gremio_controller)

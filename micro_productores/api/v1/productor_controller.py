@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 from application.services import ProductorService
-from application.dtos import CrearProductorDTO, ProductorResponseDTO
+from application.dtos import ProductorResponseDTO, RegistrarProductorEnGremioDTO
 from deps import get_productor_service
 
 router = APIRouter(prefix="/api/v1/productores", tags=["Productores"])
 
 @router.post("/", response_model=ProductorResponseDTO, status_code=201)
-async def crear_productor(productor: CrearProductorDTO, svc : ProductorService = Depends(get_productor_service)):
+async def crear_productor(productor: RegistrarProductorEnGremioDTO, svc : ProductorService = Depends(get_productor_service)):
     try:        
         return await svc.crear_productor(productor)
     except ValueError as e:

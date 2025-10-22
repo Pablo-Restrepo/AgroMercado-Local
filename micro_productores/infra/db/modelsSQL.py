@@ -23,6 +23,6 @@ class ProductorModel(SQLModel, table=True):
     gre_id: Optional[int] = Field(nullable=True, default=None, foreign_key="gremio.gre_id")
     prod_rol: str = Field(max_length=50, default="NONE")
     prod_fecha_creacion: datetime = Field(default_factory=datetime.now)
-    u_id:int = Field(nullable=True,unique=True)
+    u_id:int = Field(nullable=False,unique=True)
     # Relación con gremio
     gremio: Optional[GremioModel] = Relationship(back_populates="productores")        

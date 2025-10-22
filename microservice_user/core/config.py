@@ -1,3 +1,4 @@
+import os
 from pydantic_settings import BaseSettings
 from pydantic import ConfigDict
 
@@ -12,7 +13,7 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
     model_config = ConfigDict(
-        env_file='.env',
+        env_file=os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env'),
         extra='ignore'
     )
 

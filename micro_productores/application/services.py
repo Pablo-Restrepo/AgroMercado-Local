@@ -1,6 +1,6 @@
 from domain.repository import IGremioRepository, IProductorRepository
-from application.dtos import CrearProductorDTO, GremioResponseDTO, ProductorResponseDTO, CrearGremioDTO
-from application.mapper import productorDTO_a_productor
+from application.dtos import CrearProductorDTO, GremioResponseDTO, ProductorResponseDTO, CrearGremioDTO, RegistrarProductorEnGremioDTO
+from application.mapper import productorDTO_a_productor, productorDTO_a_productor_admin
 from application.usuario_service import registrar_usuario, eliminar_usuario_por_email
 
 class ProductorService:
@@ -8,14 +8,13 @@ class ProductorService:
         self.productor_repo = productor_repo
         self.gremio_repo = gremio_repo
     # Métodos del servicio
-    async def crear_productor(self, productorDTO: CrearProductorDTO) -> ProductorResponseDTO:
+    async def crear_productor(self, productorDTO: RegistrarProductorEnGremioDTO ) -> ProductorResponseDTO:
         """Función para registrar productor (Caso de uso asociado al registro de productores en un gremio, esta acción es llevada a cabo por el admin del gremio)        """                
         #Extraer datos del DTO
         usuario = productorDTO.usuario
         productor = productorDTO_a_productor(productorDTO)
-        # Validaciones de negocio
-        #Voy a quitar id_gremio solo para pruebas
-        faltantes = [f for f in ("nombres", "apellidos","rol") if not getattr(productor, f, None)]
+        # Validaciones de negocio        
+        faltantes = [f for f in ("nombres", "apellidos") if not getattr(productor, f, None)]
         if faltantes:
             raise ValueError(f"Campos obligatorios faltantes: {', '.join(faltantes)}")
         if await self.productor_repo.es_codigo_existente(productor.codigo):
@@ -51,6 +50,15 @@ class ProductorService:
             raise ValueError("Productor no encontrado")
         productor.eliminar_productor()
         await self.productor_repo.actualizar_productor(productor)
+        return ProductorResponseDTO.model_validate(productor,from_attributes=True)
+    async def crear_admin(self, adminDTO: CrearProductorDTO) -> ProductorResponseDTO:
+        """Función para registrar productor administrador (Caso de uso asociado al registro de productores administradores del sistema, esta acción es llevada a cabo por el microservicio de usuarios)        """
+        productor = productorDTO_a_productor_admin(adminDTO)
+        # Validaciones de negocio        
+        faltantes = [f for f in ("nombres", "apellidos") if not getattr(productor, f, None)]
+        if faltantes:
+            raise ValueError(f"Campos obligatorios faltantes: {', '.join(faltantes)}")              
+        productor.id = await self.productor_repo.agregar_productor(productor)        
         return ProductorResponseDTO.model_validate(productor,from_attributes=True)
 class GremioService:    
     def __init__(self, gremio_repo: IGremioRepository, productor_repo: IProductorRepository):
@@ -111,3 +119,4 @@ class GremioService:
         if not gremio:
             raise ValueError("Gremio no encontrado")
         return [ProductorResponseDTO.model_validate(p,from_attributes=True) for p in await self.gremio_repo.obtener_productores_por_gremio(id_gremio)]
+    

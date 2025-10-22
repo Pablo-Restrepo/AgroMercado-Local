@@ -102,7 +102,8 @@ class ProductorRepositorySQL(IProductorRepository):
                     prod_apellidos=productor.apellidos,
                     prod_rol=(productor.rol if productor.rol else "NONE"),
                     gre_id=productor.id_gremio if productor.id_gremio is not None else None,
-                    prod_es_activo=bool(productor.es_activo)
+                    prod_es_activo=bool(productor.es_activo),
+                    u_id=productor.u_id
                 )
                 session.add(nuevo)
                 await session.commit()
@@ -127,7 +128,8 @@ class ProductorRepositorySQL(IProductorRepository):
                     apellidos=p.prod_apellidos,
                     id_gremio=(p.gre_id if p.gre_id is not None else None),
                     rol=(p.prod_rol if p.prod_rol != "NONE" else None),
-                    es_activo=bool(p.prod_es_activo)
+                    es_activo=bool(p.prod_es_activo),
+                    u_id=p.u_id
                 )
                 for p in productores_orm
             ]
@@ -143,7 +145,8 @@ class ProductorRepositorySQL(IProductorRepository):
                     apellidos=orm.prod_apellidos,
                     id_gremio=(orm.gre_id if orm.gre_id is not None else None),
                     rol=(orm.prod_rol if orm.prod_rol != "NONE" else None),
-                    es_activo=bool(orm.prod_es_activo)
+                    es_activo=bool(orm.prod_es_activo),
+                    u_id=orm.u_id
                 )
             logger.warning(f"Productor no encontrado: {id}")
             return None
