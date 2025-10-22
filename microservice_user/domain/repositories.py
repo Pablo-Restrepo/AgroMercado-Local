@@ -9,7 +9,18 @@ class IPersonaRepository(ABC):
     Define los contratos que debe cumplir cualquier implementación
     del repositorio de personas.
     """
-    
+    @abstractmethod
+    def delete_persona(self, persona_id: int) -> None:
+        """
+        Elimina la persona por ID.
+
+        Args:
+            persona_id (int): ID de la persona a eliminar
+
+        Raises:
+            ValueError: Si la persona no existe o no puede eliminarse
+        """
+        pass
     @abstractmethod
     def save_persona(self, persona: Persona) -> int:
         """
@@ -59,7 +70,18 @@ class IUsuarioRepository(ABC):
     Define los contratos que debe cumplir cualquier implementación
     del repositorio de usuarios.
     """
-    
+    @abstractmethod
+    def delete_usuario(self, usuario_id: int) -> None:
+        """
+        Elimina el usuario por ID.
+
+        Args:
+            usuario_id (int): ID del usuario a eliminar
+
+        Raises:
+            ValueError: Si el usuario no existe o no puede eliminarse
+        """
+        pass
     @abstractmethod
     def save(self, usuario: Usuario) -> int:
         """

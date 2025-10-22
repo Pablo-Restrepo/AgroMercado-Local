@@ -37,3 +37,29 @@ class UsuarioService:
         
         # Guardar usuario
         self.usuario_repository.save(usuario)
+        
+    def eliminar_usuario_y_persona(self, usuario_id: int):
+        """
+        Elimina un usuario y su persona asociada.
+        - Busca usuario por id
+        - Elimina usuario
+        - Si existe persona asociada la elimina
+        """
+        # Buscar usuario existente
+        usuario_existente = self.usuario_repository.find_by_id(usuario_id)
+        if not usuario_existente:
+            raise ValueError(f"Usuario con id {usuario_id} no encontrado")
+
+        # obtener p_id antes de eliminar usuario
+        p_id = getattr(usuario_existente, "p_id", None)
+
+        # Eliminar usuario primero
+        self.usuario_repository.delete_usuario(usuario_id)
+
+        # Si existe persona asociada, eliminarla
+        if p_id:
+            try:
+                self.persona_repository.delete_persona(p_id)
+            except ValueError:
+                # si no existe persona, ignorar o loggear — aquí ignoro
+                pass

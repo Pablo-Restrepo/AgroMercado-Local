@@ -49,3 +49,29 @@ def registrar_usuario(
         return APIResponse(status="success", message="Usuario y persona registrados exitosamente", data=data)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    
+
+@router.delete(
+    "/usuarios/{u_id}",
+    summary="Eliminar usuario y persona",
+    description="Elimina un usuario y la persona asociada por ID de usuario.",
+    response_model=APIResponse,
+    responses={
+        200: {"description": "Usuario y persona eliminados exitosamente"},
+        404: {"description": "Usuario no encontrado"},
+        400: {"description": "Error al eliminar"}
+    }
+)
+def eliminar_usuario(
+    u_id: int,
+    usuario_service: UsuarioService = Depends(get_usuario_service)
+):
+    try:
+        usuario_service.eliminar_usuario_y_persona(u_id)
+        data = {"u_id": u_id}
+        return APIResponse(status="success", message="Usuario y persona eliminados exitosamente", data=data)
+    except ValueError as e:
+        # ValueError usado para not found o validaciones
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Error al eliminar usuario")
