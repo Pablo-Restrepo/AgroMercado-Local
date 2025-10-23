@@ -1,4 +1,5 @@
 from sqlmodel import SQLModel, Field, Relationship
+from microservice_user.domain.usuario import RolEnum
 
 
 class PersonaModel(SQLModel, table=True):
@@ -22,6 +23,7 @@ class UsuarioModel(SQLModel, table=True):
     u_nombre_usuario: str = Field(max_length=100)
     u_contrasenia: str = Field(max_length=255)
     u_email: str = Field(unique=True, max_length=100)
+    u_rol: RolEnum = Field(default=RolEnum.CLIENTE, max_length=50)
     p_id: int | None = Field(default=None, foreign_key="persona.p_id")
 
     # Relación con persona

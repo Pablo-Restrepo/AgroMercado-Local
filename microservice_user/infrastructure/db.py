@@ -141,6 +141,7 @@ class UsuarioRepository(IUsuarioRepository):
                     u_nombre_usuario=usuario.u_nombre_usuario,
                     u_contrasenia=usuario.u_contrasenia,
                     u_email=usuario.u_email,
+                    u_rol=usuario.u_rol,
                     p_id=usuario.p_id
                 )
                 session.add(usuario_model)
@@ -195,7 +196,8 @@ class UsuarioRepository(IUsuarioRepository):
             stmt = select(
                 UsuarioModel.u_id,
                 UsuarioModel.u_nombre_usuario,
-                UsuarioModel.u_email
+                UsuarioModel.u_email,
+                UsuarioModel.u_rol  # Add this field
             ).where(
                 UsuarioModel.u_email == email,
                 UsuarioModel.u_contrasenia == password,
@@ -225,5 +227,6 @@ class UsuarioRepository(IUsuarioRepository):
             u_nombre_usuario=usuario_model.u_nombre_usuario,
             u_contrasenia=usuario_model.u_contrasenia,
             u_email=usuario_model.u_email,
-            p_id=usuario_model.p_id
+            p_id=usuario_model.p_id,
+            u_rol=usuario_model.u_rol
         )

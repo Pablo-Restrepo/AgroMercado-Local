@@ -74,12 +74,13 @@ class UsuarioService:
             email, password)
 
         if result:
-            u_id, u_nombre_usuario, u_email = result
-            # Datos para el token
+            u_id, u_nombre_usuario, u_email, u_rol = result
+
             token_data = {
                 'sub': str(u_id),
                 'email': u_email,
-                'username': u_nombre_usuario
+                'username': u_nombre_usuario,
+                'rol': u_rol
             }
 
             access_token = self.jwt_manager.create_access_token(
@@ -91,6 +92,7 @@ class UsuarioService:
                 'u_id': u_id,
                 'u_nombre_usuario': u_nombre_usuario,
                 'u_email': u_email,
+                'u_rol': u_rol,
                 'access_token': access_token,
                 'refresh_token': refresh_token
             }

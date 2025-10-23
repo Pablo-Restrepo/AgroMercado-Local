@@ -6,10 +6,8 @@ services:
     container_name: mysql_db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_ROOT_PASSWORD: Oracle123
       MYSQL_DATABASE: microservice_user_bd
-      MYSQL_USER: root
-      MYSQL_PASSWORD: Oracle123
     ports:
       - "3306:3306"
     volumes:
