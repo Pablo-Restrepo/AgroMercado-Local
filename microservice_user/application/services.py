@@ -1,5 +1,4 @@
 import httpx
-from typing import Optional, Dict, Any
 from microservice_user.domain.usuario import Usuario
 from microservice_user.domain.persona import Persona
 from microservice_user.domain.repositories import IUsuarioRepository, IPersonaRepository
@@ -119,7 +118,7 @@ class AuthService:
     def __init__(self):
         self.microservice_url = "http://localhost:8001"  # URL del microservicio
 
-    async def validate_user_credentials(self, email: str, password: str) -> Optional[Dict[str, Any]]:
+    async def validate_user_credentials(self, email: str, password: str) -> dict[str, any] | None:
         """Valida credenciales contra el microservicio de usuarios"""
         async with httpx.AsyncClient() as client:
             try:
@@ -139,7 +138,7 @@ class AuthService:
                 raise Exception(
                     "Error conectando con el servicio de autenticación")
 
-    async def register_user(self, user_data: Dict[str, Any]) -> Dict[str, Any]:
+    async def register_user(self, user_data: dict[str, any]) -> dict[str, any] | None:
         """Registra un nuevo usuario en el microservicio"""
         async with httpx.AsyncClient() as client:
             try:

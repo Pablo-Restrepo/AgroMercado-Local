@@ -1,10 +1,8 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from microservice_user.api.schemas import (
     UsuarioRegistro, UsuarioLogin, UsuarioLoginResponse,
     TokenRefresh, TokenResponse
 )
-from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
-from microservice_user.api.schemas import UsuarioRegistro
 from microservice_user.application.mapper import usuario_registro_to_persona, usuario_registro_to_usuario
 from microservice_user.application.services import UsuarioService
 from microservice_user.api.response import APIResponse

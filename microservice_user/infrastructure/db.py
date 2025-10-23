@@ -1,4 +1,3 @@
-from typing import Optional
 from sqlmodel import Session, select
 from sqlalchemy.exc import IntegrityError
 from microservice_user.domain.repositories import IPersonaRepository, IUsuarioRepository
@@ -56,7 +55,7 @@ class PersonaRepository(IPersonaRepository):
                         f"Ya existe una persona con la cédula {persona.p_cedula}")
                 raise ValueError("Error al guardar la persona")
 
-    def find_by_id(self, persona_id: int) -> Optional[Persona]:
+    def find_by_id(self, persona_id: int) -> Persona | None:
         """
         Busca una persona por ID y la convierte a entidad de dominio.
         """
@@ -69,7 +68,7 @@ class PersonaRepository(IPersonaRepository):
 
             return self._model_to_domain(persona_model)
 
-    def find_by_cedula(self, cedula: str) -> Optional[Persona]:
+    def find_by_cedula(self, cedula: str) -> Persona | None:
         """
         Busca una persona por cédula y la convierte a entidad de dominio.
         """
@@ -165,7 +164,7 @@ class UsuarioRepository(IUsuarioRepository):
             usuario_model = session.exec(stmt).first()
             return usuario_model is not None
 
-    def find_by_id(self, usuario_id: int) -> Optional[Usuario]:
+    def find_by_id(self, usuario_id: int) -> Usuario | None:
         """
         Busca un usuario por ID y lo convierte a entidad de dominio.
         """
@@ -178,7 +177,7 @@ class UsuarioRepository(IUsuarioRepository):
 
             return self._model_to_domain(usuario_model)
 
-    def find_by_email(self, email: str) -> Optional[Usuario]:
+    def find_by_email(self, email: str) -> Usuario | None:
         """
         Busca un usuario por email y lo convierte a entidad de dominio.
         """
