@@ -1,3 +1,6 @@
+# Crear venv (desde la raíz del proyecto)
+py -3 -m venv venv
+
 ### Activar el venv
 venv\Scripts\activate.bat
 

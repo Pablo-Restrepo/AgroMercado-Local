@@ -105,6 +105,19 @@ class PersonaRepository(IPersonaRepository):
             p_telefono=persona_model.p_telefono
         )
 
+    def delete_persona(self, persona_id: int) -> None:
+        """
+        Elimina una persona por su ID.
+        Lanza ValueError si no existe.
+        """
+        with Session(engine) as session:
+            stmt = select(PersonaModel).where(PersonaModel.p_id == persona_id)
+            persona_model = session.exec(stmt).first()
+            if not persona_model:
+                raise ValueError(f"La persona con id {persona_id} no existe")
+            session.delete(persona_model)
+            session.commit()
+
 
 class UsuarioRepository(IUsuarioRepository):
     """
@@ -190,6 +203,19 @@ class UsuarioRepository(IUsuarioRepository):
             )
             row = session.exec(stmt).first()
             return tuple(row) if row else None
+
+    def delete_usuario(self, usuario_id: int) -> None:
+        """
+        Elimina un usuario por su ID.
+        Lanza ValueError si no existe.
+        """
+        with Session(engine) as session:
+            stmt = select(UsuarioModel).where(UsuarioModel.u_id == usuario_id)
+            usuario_model = session.exec(stmt).first()
+            if not usuario_model:
+                raise ValueError(f"El usuario con id {usuario_id} no existe")
+            session.delete(usuario_model)
+            session.commit()
 
     def _model_to_domain(self, usuario_model: UsuarioModel) -> Usuario:
         """
