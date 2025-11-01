@@ -1,5 +1,4 @@
 import httpx
-from typing import Optional, Dict, Any
 from microservice_user.domain.usuario import Usuario
 from microservice_user.domain.persona import Persona
 from microservice_user.domain.repositories import IUsuarioRepository, IPersonaRepository
@@ -12,9 +11,9 @@ class UsuarioService:
     Coordina las operaciones entre entidades de dominio y repositorios.
     """
 
-    def __init__(self, usuario_repository: IUsuarioRepository, db: IPersonaRepository):
+    def __init__(self, usuario_repository: IUsuarioRepository, persona_repository: IPersonaRepository):
         self.usuario_repository = usuario_repository
-        self.db = db
+        self.persona_repository = persona_repository
         self.jwt_manager = JWTManager()
 
     def registrar_usuario_y_persona(self, persona: Persona, usuario: Usuario):
@@ -32,16 +31,17 @@ class UsuarioService:
         if self.usuario_repository.exists_email(usuario.u_email):
             raise ValueError("El email ya está registrado")
         # Validar si la cedula ya esta registrada
-        if self.db.exists_cedula(persona.p_cedula):
+        if self.persona_repository.exists_cedula(persona.p_cedula):
             raise ValueError("La cédula ya está registrada")
         # Guardar persona primero para obtener el ID
-        p_id = self.db.save_persona(persona)
+        p_id = self.persona_repository.save_persona(persona)
 
         # Asignar el ID de persona al usuario
         usuario.p_id = p_id
 
         # Guardar usuario
         self.usuario_repository.save(usuario)
+<<<<<<<<< Temporary merge branch 1
 
     def validar_credenciales(self, email: str, password: str):
         """Valida las credenciales del usuario y genera tokens JWT"""
@@ -49,12 +49,13 @@ class UsuarioService:
             email, password)
 
         if result:
-            u_id, u_nombre_usuario, u_email = result
-            # Datos para el token
+            u_id, u_nombre_usuario, u_email, u_rol = result
+
             token_data = {
                 'sub': str(u_id),
                 'email': u_email,
-                'username': u_nombre_usuario
+                'username': u_nombre_usuario,
+                'rol': u_rol
             }
 
             access_token = self.jwt_manager.create_access_token(
@@ -66,6 +67,7 @@ class UsuarioService:
                 'u_id': u_id,
                 'u_nombre_usuario': u_nombre_usuario,
                 'u_email': u_email,
+                'u_rol': u_rol,
                 'access_token': access_token,
                 'refresh_token': refresh_token
             }
@@ -93,7 +95,7 @@ class AuthService:
     def __init__(self):
         self.microservice_url = "http://localhost:8001"  # URL del microservicio
 
-    async def validate_user_credentials(self, email: str, password: str) -> Optional[Dict[str, Any]]:
+    async def validate_user_credentials(self, email: str, password: str) -> dict[str, any] | None:
         """Valida credenciales contra el microservicio de usuarios"""
         async with httpx.AsyncClient() as client:
             try:
@@ -113,7 +115,7 @@ class AuthService:
                 raise Exception(
                     "Error conectando con el servicio de autenticación")
 
-    async def register_user(self, user_data: Dict[str, Any]) -> Dict[str, Any]:
+    async def register_user(self, user_data: dict[str, any]) -> dict[str, any] | None:
         """Registra un nuevo usuario en el microservicio"""
         async with httpx.AsyncClient() as client:
             try:

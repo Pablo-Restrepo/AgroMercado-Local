@@ -1,7 +1,8 @@
-from typing import Any, Optional
 from pydantic import BaseModel
+from typing import Any
+
 
 class APIResponse(BaseModel):
     status: str
     message: str
-    data: Optional[Any] = None
+    data: Any | None

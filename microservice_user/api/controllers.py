@@ -7,6 +7,8 @@ from microservice_user.application.mapper import usuario_registro_to_persona, us
 from microservice_user.application.services import UsuarioService
 from microservice_user.api.response import APIResponse
 from microservice_user.infrastructure.queue.queue_rabbit import publish_user_registration
+from microservice_user.core.auth_middleware import get_current_user
+from microservice_user.domain.usuario import RolEnum
 
 router = APIRouter()
 
@@ -32,7 +34,7 @@ Registra un usuario junto con su información personal.
     }
 )
 def registrar_usuario(
-    usuario_data: UsuarioRegistro, 
+    usuario_data: UsuarioRegistro,
     background_tasks: BackgroundTasks,
     usuario_service: UsuarioService = Depends(get_usuario_service)
 ):
@@ -45,7 +47,9 @@ def registrar_usuario(
         data = {
             "u_id": usuario.u_id,
             "nombres": persona.p_nombre,
-            "apellidos": persona.p_apellido
+            "apellidos": persona.p_apellido,
+            "email": usuario.u_email,
+            "rol": usuario.u_rol
         }
 
         # Encolar publicación en background para no bloquear la respuesta
@@ -84,6 +88,7 @@ def login_usuario(credentials: UsuarioLogin,
                 u_id=usuario['u_id'],
                 u_nombre_usuario=usuario['u_nombre_usuario'],
                 u_email=usuario['u_email'],
+                u_rol=usuario['u_rol'],
                 access_token=usuario['access_token'],
                 refresh_token=usuario['refresh_token'],
                 token_type="bearer",
@@ -125,29 +130,44 @@ def refresh_token(token_data: TokenRefresh,
         raise HTTPException(
             status_code=500, detail="Error interno del servidor") from e
 
-    
 
 @router.delete(
     "/usuarios/{u_id}",
     summary="Eliminar usuario y persona",
-    description="Elimina un usuario y la persona asociada por ID de usuario.",
+    description="Elimina un usuario y la persona asociada por ID de usuario. Requiere rol productor-admin.",
     response_model=APIResponse,
     responses={
         200: {"description": "Usuario y persona eliminados exitosamente"},
+        401: {"description": "No autenticado o token inválido"},
+        403: {"description": "No tiene permisos (requiere rol productor-admin)"},
         404: {"description": "Usuario no encontrado"},
         400: {"description": "Error al eliminar"}
     }
 )
 def eliminar_usuario(
     u_id: int,
+    current_user: dict = Depends(get_current_user),
     usuario_service: UsuarioService = Depends(get_usuario_service)
 ):
+    # Verificar que el usuario tiene rol productor-admin
+    if current_user.get('rol') != RolEnum.PRODUCTOR_ADMIN:
+        raise HTTPException(
+            status_code=403,
+            detail="No tiene permisos para eliminar usuarios. Se requiere rol productor-admin"
+        )
+
     try:
         usuario_service.eliminar_usuario_y_persona(u_id)
         data = {"u_id": u_id}
-        return APIResponse(status="success", message="Usuario y persona eliminados exitosamente", data=data)
+        return APIResponse(
+            status="success",
+            message="Usuario y persona eliminados exitosamente",
+            data=data
+        )
     except ValueError as e:
-        # ValueError usado para not found o validaciones
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=400, detail="Error al eliminar usuario")
+        raise HTTPException(
+            status_code=400,
+            detail="Error al eliminar usuario"
+        )

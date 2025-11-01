@@ -1,4 +1,3 @@
-from typing import Optional
 from sqlmodel import Session, select
 from sqlalchemy.exc import IntegrityError
 from microservice_user.domain.repositories import IPersonaRepository, IUsuarioRepository
@@ -56,7 +55,7 @@ class PersonaRepository(IPersonaRepository):
                         f"Ya existe una persona con la cédula {persona.p_cedula}")
                 raise ValueError("Error al guardar la persona")
 
-    def find_by_id(self, persona_id: int) -> Optional[Persona]:
+    def find_by_id(self, persona_id: int) -> Persona | None:
         """
         Busca una persona por ID y la convierte a entidad de dominio.
         """
@@ -69,7 +68,7 @@ class PersonaRepository(IPersonaRepository):
 
             return self._model_to_domain(persona_model)
 
-    def find_by_cedula(self, cedula: str) -> Optional[Persona]:
+    def find_by_cedula(self, cedula: str) -> Persona | None:
         """
         Busca una persona por cédula y la convierte a entidad de dominio.
         """
@@ -117,6 +116,8 @@ class PersonaRepository(IPersonaRepository):
                 raise ValueError(f"La persona con id {persona_id} no existe")
             session.delete(persona_model)
             session.commit()
+
+
 class UsuarioRepository(IUsuarioRepository):
     """
     Implementación del repositorio de Usuario usando SQLAlchemy ORM.
@@ -140,6 +141,7 @@ class UsuarioRepository(IUsuarioRepository):
                     u_nombre_usuario=usuario.u_nombre_usuario,
                     u_contrasenia=usuario.u_contrasenia,
                     u_email=usuario.u_email,
+                    u_rol=usuario.u_rol,
                     p_id=usuario.p_id
                 )
                 session.add(usuario_model)
@@ -163,7 +165,7 @@ class UsuarioRepository(IUsuarioRepository):
             usuario_model = session.exec(stmt).first()
             return usuario_model is not None
 
-    def find_by_id(self, usuario_id: int) -> Optional[Usuario]:
+    def find_by_id(self, usuario_id: int) -> Usuario | None:
         """
         Busca un usuario por ID y lo convierte a entidad de dominio.
         """
@@ -176,7 +178,7 @@ class UsuarioRepository(IUsuarioRepository):
 
             return self._model_to_domain(usuario_model)
 
-    def find_by_email(self, email: str) -> Optional[Usuario]:
+    def find_by_email(self, email: str) -> Usuario | None:
         """
         Busca un usuario por email y lo convierte a entidad de dominio.
         """
@@ -194,7 +196,8 @@ class UsuarioRepository(IUsuarioRepository):
             stmt = select(
                 UsuarioModel.u_id,
                 UsuarioModel.u_nombre_usuario,
-                UsuarioModel.u_email
+                UsuarioModel.u_email,
+                UsuarioModel.u_rol  # Add this field
             ).where(
                 UsuarioModel.u_email == email,
                 UsuarioModel.u_contrasenia == password,
@@ -214,7 +217,7 @@ class UsuarioRepository(IUsuarioRepository):
                 raise ValueError(f"El usuario con id {usuario_id} no existe")
             session.delete(usuario_model)
             session.commit()
-    
+
     def _model_to_domain(self, usuario_model: UsuarioModel) -> Usuario:
         """
         Convierte un modelo de infraestructura a entidad de dominio.
@@ -224,5 +227,6 @@ class UsuarioRepository(IUsuarioRepository):
             u_nombre_usuario=usuario_model.u_nombre_usuario,
             u_contrasenia=usuario_model.u_contrasenia,
             u_email=usuario_model.u_email,
-            p_id=usuario_model.p_id
+            p_id=usuario_model.p_id,
+            u_rol=usuario_model.u_rol
         )
