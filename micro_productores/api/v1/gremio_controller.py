@@ -3,7 +3,7 @@ from application.services import GremioService
 from application.dtos import CrearGremioDTO, GremioResponseDTO, ProductorResponseDTO
 from deps import get_gremio_service 
 
-router = APIRouter(prefix="/api/v1/gremios", tags=["Gremios"])
+router = APIRouter(prefix="/gremios", tags=["Gremios"])
 
 @router.post("/{id_admin}", response_model=GremioResponseDTO, status_code=201)
 async def crear_gremio(id_admin: int, gremio: CrearGremioDTO, svc : GremioService = Depends(get_gremio_service)):

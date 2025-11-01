@@ -9,6 +9,9 @@ class Settings(BaseSettings):
     VERSION: str = '1.0.0'
     RABBIT_URL: str
     QUEUE_NAME: str 
+    EUREKA_APP_NAME: str = 'productors-microservice'
+    EUREKA_INSTANCE_PORT: int = 8000
+    EUREKA_SERVER_URL: str = 'http://localhost:8761/eureka'
     model_config = ConfigDict(
         env_file='.env',
         extra='ignore'

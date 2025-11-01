@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
 from infra.db.engine import init_db
-from deps import get_productor_service
+from deps import get_productor_service, eureka_client
 from application.handler import handle_create_productor_admin
 from infra.consumer_rabbitmq import RabbitConsumer
 
@@ -32,13 +32,16 @@ async def lifespan(app: FastAPI):
 
     await consumer.start(_handler)
     app.state.rabbit_consumer = consumer
+    #registrar en Eureka
+    await eureka_client.start()
 
     try:
         yield
     finally:
         # parar consumer
         await consumer.stop()
-
+        # parar eureka_client
+        await eureka_client.stop()
 
 app = FastAPI(title="Microservicio de Productores", version="1.0.0",lifespan=lifespan)
 app.include_router(productor_controller)

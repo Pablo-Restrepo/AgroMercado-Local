@@ -3,7 +3,7 @@ from application.services import ProductorService
 from application.dtos import ProductorResponseDTO, RegistrarProductorEnGremioDTO
 from deps import get_productor_service
 
-router = APIRouter(prefix="/api/v1/productores", tags=["Productores"])
+router = APIRouter(prefix="/productores", tags=["Productores"])
 
 @router.post("/", response_model=ProductorResponseDTO, status_code=201)
 async def crear_productor(productor: RegistrarProductorEnGremioDTO, svc : ProductorService = Depends(get_productor_service)):

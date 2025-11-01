@@ -41,7 +41,6 @@ class UsuarioService:
 
         # Guardar usuario
         self.usuario_repository.save(usuario)
-<<<<<<<<< Temporary merge branch 1
 
     def validar_credenciales(self, email: str, password: str):
         """Valida las credenciales del usuario y genera tokens JWT"""

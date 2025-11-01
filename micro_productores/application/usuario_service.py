@@ -4,7 +4,7 @@ import requests
 def registrar_usuario(usuario:UsuarioRegistro):
     """Funcion que llama al microservicio de usuarios para registrar un nuevo usuario"""
     #TODO Tratar de incorporar el llamado al micro de usuarios por medio de Eureka
-    url = "http://127.0.0.1:8001/usuarios/registro"
+    url = "http://127.0.0.1:8090/usuarios/registro"
     payload = usuario.model_dump()
     headers = {
         "Content-Type": "application/json"

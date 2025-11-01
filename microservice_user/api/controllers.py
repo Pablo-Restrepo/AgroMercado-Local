@@ -53,7 +53,8 @@ def registrar_usuario(
         }
 
         # Encolar publicación en background para no bloquear la respuesta
-        background_tasks.add_task(publish_user_registration, data)
+        if usuario.u_rol != RolEnum.CLIENTE:
+            background_tasks.add_task(publish_user_registration, data)
 
         return APIResponse(status="success", message="Usuario y persona registrados exitosamente", data=data)
     except ValueError as e:
