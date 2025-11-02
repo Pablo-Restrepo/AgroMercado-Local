@@ -2,8 +2,6 @@ from pydantic_settings import BaseSettings
 from pydantic import ConfigDict
 
 
-from pydantic import BaseSettings, ConfigDict
-
 
 class Settings(BaseSettings):
     # Datos de la aplicación
@@ -24,7 +22,7 @@ class Settings(BaseSettings):
     MONGO_HOST: str
     MONGO_PORT: int
     MONGO_DB: str
-
+    """"
     # RabbitMQ
     RABBIT_USER: str
     RABBIT_PASSWORD: str
@@ -32,12 +30,12 @@ class Settings(BaseSettings):
     RABBIT_PORT: int
     QUEUE_PRODUCTORES: str
     QUEUE_PRODUCTOS: str
-
+    """
     # Propiedades derivadas
     @property
     def MYSQL_DATABASE_URL(self) -> str:
         return (
-            f"mysql+pymysql://{self.MYSQL_USER}:{self.MYSQL_PASSWORD}"
+            f"mysql+asyncmy://{self.MYSQL_USER}:{self.MYSQL_PASSWORD}"
             f"@{self.MYSQL_HOST}:{self.MYSQL_PORT}/{self.MYSQL_DB}"
         )
 
@@ -48,13 +46,14 @@ class Settings(BaseSettings):
             f"@{self.MONGO_HOST}:{self.MONGO_PORT}/{self.MONGO_DB}"
         )
 
+    """
     @property
     def RABBIT_URL(self) -> str:
         return (
             f"amqp://{self.RABBIT_USER}:{self.RABBIT_PASSWORD}"
             f"@{self.RABBIT_HOST}:{self.RABBIT_PORT}/"
         )
-
+    """
     model_config = ConfigDict(
         env_file=".env",
         extra="ignore"

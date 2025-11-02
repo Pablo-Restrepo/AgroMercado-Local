@@ -1,9 +1,9 @@
 from mongoengine import connect, disconnect
-from core.config import Settings
+from core.config import settings
 
 
 # URL de conexión a MongoDB (por ejemplo: "mongodb://usuario:password@localhost:27017/mi_base")
-MONGO_DATABASE_URL = Settings.MONGO_DATABASE_URL
+MONGO_DATABASE_URL = settings.MONGO_DATABASE_URL
 
 
 def init_mongo_db():

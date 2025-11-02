@@ -1,11 +1,11 @@
 from sqlmodel import SQLModel
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
-from core.config import Settings
+from core.config import settings
 
 
 # URL debe ser async driver, p.ej. "mysql+asyncmy://user:pass@host/db" o "postgresql+asyncpg://..."
-DATABASE_URL = Settings.MYSQL_DATABASE_URL
+DATABASE_URL = settings.MYSQL_DATABASE_URL
 
 engine = create_async_engine(DATABASE_URL, echo=False)
 async_session = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
