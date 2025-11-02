@@ -12,9 +12,9 @@ spring:
             - name: jwtAuthenticationFilter
               args:
                 publicEndpoints:
-                  - path: /usuarios/registro
+                  - path: /api/usuarios/registro
                     methods: [POST]
-                  - path: /usuarios/login
+                  - path: /api/usuarios/login
                     methods: [POST]
         - id: sales-microservice
           uri: lb://sales-microservice     
