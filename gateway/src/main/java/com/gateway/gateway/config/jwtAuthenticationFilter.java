@@ -39,7 +39,7 @@ public class jwtAuthenticationFilter extends AbstractGatewayFilterFactory<jwtAut
 
             String authHeader = exchange.getRequest().getHeaders().get(HttpHeaders.AUTHORIZATION).get(0);
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                authHeader = authHeader.substring(7);
+                authHeader = authHeader.substring(7);                
                 try {
                 jwtHandler.validateToken(authHeader);
                 return chain.filter(exchange);

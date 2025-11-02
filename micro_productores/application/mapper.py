@@ -1,5 +1,5 @@
 from application.dtos import CrearProductorDTO, RegistrarProductorEnGremioDTO
-from domain.models import Productor
+from domain.models import Productor, RolEnum
 
 
 def productorDTO_a_productor(dto: RegistrarProductorEnGremioDTO) -> Productor:
@@ -9,7 +9,7 @@ def productorDTO_a_productor(dto: RegistrarProductorEnGremioDTO) -> Productor:
         nombres=dto.usuario.persona.p_nombre,
         apellidos=dto.usuario.persona.p_apellido,
         id_gremio=dto.id_gremio,
-        rol=dto.rol
+        rol=RolEnum.PRODUCTOR_AFILIADO,        
     )
 def productorDTO_a_productor_admin(dto: CrearProductorDTO) -> Productor:
     return Productor(
@@ -18,6 +18,6 @@ def productorDTO_a_productor_admin(dto: CrearProductorDTO) -> Productor:
         nombres=dto.nombres,
         apellidos=dto.apellidos,
         id_gremio=None,
-        rol="ADMIN",
+        rol=RolEnum.PRODUCTOR_ADMIN,
         u_id=dto.u_id
     )

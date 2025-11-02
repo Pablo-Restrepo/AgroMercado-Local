@@ -1,5 +1,6 @@
 package com.gateway.gateway.config;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -30,7 +31,15 @@ public class jwtHandler {
 }
 
     private Key getSignKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(SECRET);
+        byte[] keyBytes;
+        try {
+            // intentar interpretar SECRET como base64 (recomendado)
+            keyBytes = Decoders.BASE64.decode(SECRET.trim());
+        } catch (IllegalArgumentException ex) {
+            // fallback: usar bytes UTF-8 del secret (legacy/dev)
+            System.out.println("SECRET no es base64, usando bytes UTF-8 como fallback (mejor usar base64 de 32 bytes)");
+            keyBytes = SECRET.getBytes(StandardCharsets.UTF_8);
+        }
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }

@@ -16,7 +16,7 @@ eureka_client = EurekaClient(
 init_db()
 #TODO: Configurar el inicio de la aplicación con Lifespan
 async def lifespan(app: FastAPI):
-    await eureka_client.start()
+    await eureka_client.start() #desactivado temporalmente
     try:
         yield
     finally:

@@ -2,11 +2,20 @@ from fastapi import APIRouter, Depends, HTTPException
 from application.services import GremioService
 from application.dtos import CrearGremioDTO, GremioResponseDTO, ProductorResponseDTO
 from deps import get_gremio_service 
+from core.auth_middleware import get_current_user
+from domain.models import RolEnum
 
 router = APIRouter(prefix="/gremios", tags=["Gremios"])
 
 @router.post("/{id_admin}", response_model=GremioResponseDTO, status_code=201)
-async def crear_gremio(id_admin: int, gremio: CrearGremioDTO, svc : GremioService = Depends(get_gremio_service)):
+async def crear_gremio(id_admin: int, gremio: CrearGremioDTO, current_user: dict = Depends(get_current_user), svc: GremioService = Depends(get_gremio_service)):
+    # Verificar que el usuario tiene rol productor-admin
+    if current_user.get('rol') != RolEnum.PRODUCTOR_ADMIN:
+        raise HTTPException(
+            status_code=403,
+            detail="No tiene permisos para crear gremios. Se requiere rol productor-admin"
+        )
+
     try:
         return await svc.crear_gremio(id_admin, gremio)
     except ValueError as e:
