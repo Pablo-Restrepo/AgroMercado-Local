@@ -11,10 +11,12 @@ from core.events.handler import on_producto_creado
 from infrastructure.db.mongo_engine import init_mongo_db, close_mongo_db
 from infrastructure.db.sql_engine import init_sql_db
 from infrastructure.db import sql_engine
+from .eureka_registry import client
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
      # iniciar DB
+    await client.start() 
     await init_sql_db()
     init_mongo_db()
 
