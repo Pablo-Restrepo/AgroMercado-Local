@@ -1,3 +1,4 @@
+import base64
 from typing import List, Optional
 from api.esquemas import ProductoConsulta
 from infrastructure.int_query_repository import IProductoQueryRepository
@@ -17,7 +18,7 @@ class MongoQueryRepository(IProductoQueryRepository):
                     p_tipo=p.p_tipo,
                     p_unidad=p.p_unidad,
                     gre_nombre=p.productor.prod_nombre_gremio,
-                    img=p.imagen,
+                    img= base64.b64encode(p.imagen).decode("utf-8"),
                     p_precio=p.p_precio
                 )
                 for p in productos
@@ -35,7 +36,7 @@ class MongoQueryRepository(IProductoQueryRepository):
                     p_tipo=p.p_tipo,
                     p_unidad=p.p_unidad,
                     gre_nombre=p.productor.prod_nombre_gremio,
-                    img=p.dir_img,
+                    img= base64.b64encode(p.imagen).decode("utf-8"),
                     p_precio=p.p_precio
                 )
                 for p in productos
@@ -50,13 +51,13 @@ class MongoQueryRepository(IProductoQueryRepository):
             if not p:
                 return None
             return ProductoConsulta(
-                p_nombre=p.p_nombre,
-                p_tipo=p.p_tipo,
-                p_unidad=p.p_unidad,
-                gre_nombre=p.productor.prod_nombre_gremio,
-                img=p.dir_img,
-                p_precio=p.p_precio
-            )
+                    p_nombre=p.p_nombre,
+                    p_tipo=p.p_tipo,
+                    p_unidad=p.p_unidad,
+                    gre_nombre=p.productor.prod_nombre_gremio,
+                    img= base64.b64encode(p.imagen).decode("utf-8"),
+                    p_precio=p.p_precio
+                )
         except Exception as e:
             print(f"Error al obtener producto por id={p_id}: {e}")
             return None
@@ -70,7 +71,7 @@ class MongoQueryRepository(IProductoQueryRepository):
                     p_tipo=p.p_tipo,
                     p_unidad=p.p_unidad,
                     gre_nombre=p.productor.prod_nombre_gremio,
-                    img=p.dir_img,
+                    img= base64.b64encode(p.imagen).decode("utf-8"),
                     p_precio=p.p_precio
                 )
                 for p in productos

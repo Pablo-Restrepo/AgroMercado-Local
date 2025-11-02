@@ -33,7 +33,7 @@ class ProductoConsulta(BaseModel):
     p_tipo: str
     p_unidad : str
     gre_nombre : str
-    p_precio : str
+    p_precio : float
     img : str
 
 class ProductorConsulta(BaseModel):

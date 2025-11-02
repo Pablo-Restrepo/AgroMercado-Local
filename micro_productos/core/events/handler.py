@@ -16,6 +16,7 @@ async def on_producto_creado(event_data: dict):
         mongo_productor = MongoProductor(
             prod_id=productor_data["prod_id"],
             prod_nombre=productor_data["prod_nombre"],
+            prod_cod_gremio =productor_data["prod_cod_gremio"],
             prod_nombre_gremio=productor_data["prod_nombre_gremio"]
         )
         print("Tipo de dato img antes:",type(event_data["imagen"]), len(event_data["imagen"]))

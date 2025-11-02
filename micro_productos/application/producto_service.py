@@ -38,6 +38,7 @@ class ProductoService:
                 "prod_id": producto_datos.prod_id,
                 "prod_nombre": productor.prod_nombre,
                 "prod_apellido": productor.prod_apellido,
+                "prod_cod_gremio":productor.prod_cod_gremio,
                 "prod_nombre_gremio": productor.prod_nombre_gremio
             }
         }
