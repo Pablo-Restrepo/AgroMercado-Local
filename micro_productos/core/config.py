@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     @property
     def MYSQL_DATABASE_URL(self) -> str:
         return (
-            f"mysql+asyncmy://{self.MYSQL_USER}:{self.MYSQL_PASSWORD}"
+            f"mysql+aiomysql://{self.MYSQL_USER}:{self.MYSQL_PASSWORD}"
             f"@{self.MYSQL_HOST}:{self.MYSQL_PORT}/{self.MYSQL_DB}"
         )
 

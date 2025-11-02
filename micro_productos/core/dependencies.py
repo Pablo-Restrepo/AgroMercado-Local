@@ -18,15 +18,11 @@ def get_producto_command_repository():
     return SQLCommandRepository()
 
 
-def get_producto_service(
-    query_repo: MongoQueryRepository = Depends(get_producto_query_repository),
-    command_repo: SQLCommandRepository = Depends(get_producto_command_repository)
-):
-    """
-    Retorna una instancia del servicio de aplicación ProductoService
-    con los repositorios inyectados.
-    """
+def get_producto_service():
+    query_repo = MongoQueryRepository()
+    command_repo = SQLCommandRepository()
     return ProductoService(
-        query_repository=query_repo,
-        command_repository=command_repo
+        query_repo=query_repo,
+        command_repo=command_repo
     )
+

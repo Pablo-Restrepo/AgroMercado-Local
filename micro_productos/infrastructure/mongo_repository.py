@@ -17,7 +17,7 @@ class MongoQueryRepository(IProductoQueryRepository):
                     p_tipo=p.p_tipo,
                     p_unidad=p.p_unidad,
                     gre_nombre=p.productor.prod_nombre_gremio,
-                    img=p.dir_img,
+                    img=p.imagen,
                     p_precio=p.p_precio
                 )
                 for p in productos
@@ -26,7 +26,7 @@ class MongoQueryRepository(IProductoQueryRepository):
             print(f"Error al listar productos por gremio ({prod_cod_gremio}): {e}")
             return []
 
-    def list_productor_por_productor(self, prod_id: int) -> List[ProductoConsulta]:
+    def list_productos_por_productor(self, prod_id: int) -> List[ProductoConsulta]:
         try:
             productos = Producto.objects(productor__prod_id=prod_id)
             return [

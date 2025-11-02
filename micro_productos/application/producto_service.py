@@ -1,11 +1,11 @@
 
-from api.esquemas import ProductoRegistro, ProductoConsulta
+import base64
+
+from bson import Binary
+from api.esquemas import ProductoRegistro, ProductoConsulta, ProductorConsulta
 from core.events import event_manager
-from domain import Productor
-from domain.Producto import Producto
 from infrastructure.int_command_repository import IProductoCommandRepository
 from infrastructure.int_query_repository import IProductoQueryRepository
-
 
 class ProductoService:
     def __init__(self, command_repo: IProductoCommandRepository, query_repo: IProductoQueryRepository):
@@ -24,17 +24,20 @@ class ProductoService:
         Registra un nuevo producto en la base de datos.
         Retorna el id del producto creado.
         """
-        producto_id = await self.command_repo.save_producto(producto_datos)
-        productor:Productor = await self.command_repo.get_productor(producto_datos.prod_id)
+        producto_id = await self.command_repo.save_producto(producto=producto_datos)
+        productor:ProductorConsulta = await self.command_repo.get_productor(prod_id=producto_datos.prod_id)
+        
         event_data = {
             "p_id": producto_id,
             "p_nombre": producto_datos.p_nombre,
             "p_tipo": producto_datos.p_tipo,
             "p_unidad": producto_datos.p_unidad,
             "p_precio": producto_datos.p_precio,
+            "imagen":producto_datos.img,
             "productor": {
                 "prod_id": producto_datos.prod_id,
                 "prod_nombre": productor.prod_nombre,
+                "prod_apellido": productor.prod_apellido,
                 "prod_nombre_gremio": productor.prod_nombre_gremio
             }
         }
@@ -49,14 +52,14 @@ class ProductoService:
         Actualiza los datos de un producto existente.
         Retorna el id del producto editado.
         """
-        return await self.command_repo.edit_producto(p_id, producto_datos)
+        return await self.command_repo.edit_producto(p_id, Producto=producto_datos)
 
     async def eliminar_producto(self, p_id: int) -> int:
         """
         Elimina un producto de la base de datos.
         Retorna el id del producto eliminado.
         """
-        return await self.command_repo.delete_producto(p_id)
+        return await self.command_repo.delete_producto(p_id=p_id)
 
     # ==========================================================
     # MÉTODOS DE CONSULTA (lectura)
@@ -77,7 +80,7 @@ class ProductoService:
         """
         Retorna un producto específico por su ID.
         """
-        return self.query_repo.get_producto_por_id(p_id)
+        return self.query_repo.get_producto_por_id(p_id=p_id)
 
     def listar_productos_por_productor(self, prod_id: int) -> list[ProductoConsulta]:
-        return  self.query_repo.list_productor_por_productor(prod_id)
+        return  self.query_repo.list_productos_por_productor(prod_id=prod_id)

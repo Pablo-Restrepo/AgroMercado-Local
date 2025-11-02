@@ -1,23 +1,25 @@
 from abc import ABC, abstractmethod
-from api.esquemas import ProductoRegistro, ProductoActualizacion
-from domain import Productor
-from domain.Producto import Producto
+from api.esquemas import ProductoRegistro, ProductoActualizacion, ProductorConsulta
+
+from abc import ABC, abstractmethod
 
 class IProductoCommandRepository(ABC):
+
     @abstractmethod
-    def save_producto(producto:ProductoRegistro)-> int:
+    async def save_producto(self, producto: ProductoRegistro) -> int:
         pass
 
     @abstractmethod
-    def edit_producto(p_id:int, Producto:ProductoActualizacion)-> int:
+    async def edit_producto(self, p_id: int, producto: ProductoActualizacion) -> int:
         pass
 
     @abstractmethod
-    def delete_producto(p_id:int)-> int:
+    async def delete_producto(self, p_id: int) -> int:
         pass
 
     @abstractmethod
-    def get_productor(prod_id:int)-> Productor:
+    async def get_productor(self, prod_id: int) -> ProductorConsulta:
         pass
+
 
    

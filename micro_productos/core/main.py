@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
 from core.dependencies import get_producto_service
-from core.events.event_manager import EventManager
+from core.events import event_manager
 from core.events.handler import on_producto_creado
 from infrastructure.db.mongo_engine import init_mongo_db, close_mongo_db
 from infrastructure.db.sql_engine import init_sql_db
@@ -27,7 +27,10 @@ async def lifespan(app: FastAPI):
         # parar consumer
         
 
-event_manager = EventManager()
+
+
+
+
 producto_service = get_producto_service()
 producto_controller = ProductoController(producto_service)
 

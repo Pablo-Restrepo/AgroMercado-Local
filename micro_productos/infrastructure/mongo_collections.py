@@ -1,4 +1,4 @@
-from mongoengine import Document,EmbeddedDocument, StringField, IntField, FloatField, EmbeddedDocumentField, ImageField
+from mongoengine import Document,EmbeddedDocument, StringField, IntField, FloatField, EmbeddedDocumentField, BinaryField
 
 
 class Productor(EmbeddedDocument):
@@ -14,6 +14,5 @@ class Producto(Document):
     p_tipo = StringField(required=True)
     p_unidad = StringField(required=True)
     p_precio = FloatField(required=True)
-    dir_img = StringField(required=True)
     productor = EmbeddedDocumentField(Productor)
-    imagen = ImageField(size=(271, 273, True), thumbnail_size=(271, 273, True))
+    imagen = BinaryField()
