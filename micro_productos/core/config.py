@@ -1,0 +1,63 @@
+from pydantic_settings import BaseSettings
+from pydantic import ConfigDict
+
+
+
+class Settings(BaseSettings):
+    # Datos de la aplicación
+    BASE_URL: str = "http://localhost:8000"
+    PROJECT_NAME: str = "AgroMercado-Local"
+    VERSION: str = "1.0.0"
+
+    # Configuración de MySQL
+    MYSQL_USER: str
+    MYSQL_PASSWORD: str
+    MYSQL_HOST: str
+    MYSQL_PORT: int
+    MYSQL_DB: str
+
+    # Configuración de MongoDB
+    MONGO_USER: str
+    MONGO_PASSWORD: str
+    MONGO_HOST: str
+    MONGO_PORT: int
+    MONGO_DB: str
+    """"
+    # RabbitMQ
+    RABBIT_USER: str
+    RABBIT_PASSWORD: str
+    RABBIT_HOST: str
+    RABBIT_PORT: int
+    QUEUE_PRODUCTORES: str
+    QUEUE_PRODUCTOS: str
+    """
+    # Propiedades derivadas
+    @property
+    def MYSQL_DATABASE_URL(self) -> str:
+        return (
+            f"mysql+aiomysql://{self.MYSQL_USER}:{self.MYSQL_PASSWORD}"
+            f"@{self.MYSQL_HOST}:{self.MYSQL_PORT}/{self.MYSQL_DB}"
+        )
+
+    @property
+    def MONGO_DATABASE_URL(self) -> str:
+        return (
+            f"mongodb://{self.MONGO_USER}:{self.MONGO_PASSWORD}"
+            f"@{self.MONGO_HOST}:{self.MONGO_PORT}/{self.MONGO_DB}"
+        )
+
+    """
+    @property
+    def RABBIT_URL(self) -> str:
+        return (
+            f"amqp://{self.RABBIT_USER}:{self.RABBIT_PASSWORD}"
+            f"@{self.RABBIT_HOST}:{self.RABBIT_PORT}/"
+        )
+    """
+    model_config = ConfigDict(
+        env_file=".env",
+        extra="ignore"
+    )
+
+
+settings = Settings()
