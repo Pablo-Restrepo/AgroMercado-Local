@@ -32,6 +32,8 @@ class Productor(Persona):
     def crear_gremio(self, nombre_gremio):
         if self.rol != RolEnum.PRODUCTOR_ADMIN:
             raise ValueError("Solo un productor con rol ADMIN puede crear un gremio")
+        if self.id_gremio is not None:
+            raise ValueError("El productor ya pertenece a un gremio")
         gremio = Gremio(None,nombre=nombre_gremio, productores=[self])        
         return gremio
 

@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     VERSION: str = '1.0.0'
     RABBIT_URL: str
     QUEUE_NAME: str
+    PRODUCTORS_QUEUE: str
     SECRET_KEY: str
     ALGORITHM: str = "HS256" 
     EUREKA_APP_NAME: str = 'productors-microservice'
