@@ -1,3 +1,6 @@
+CREATE DATABASE IF NOT EXISTS productos_db;
+USE productos_db;
+
 CREATE TABLE IF NOT EXISTS productor (
   prod_id INT AUTO_INCREMENT PRIMARY KEY,
   prod_nombre VARCHAR(100),

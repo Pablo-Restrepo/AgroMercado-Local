@@ -40,3 +40,6 @@ Inicia el servidor de desarrollo:
    
 Accede a la documentación interactiva en:
 http://localhost:8000/docs
+
+## Iniciar el venv (desde la raíz del proyecto)
+.\venv\Scripts\activate.bat  
