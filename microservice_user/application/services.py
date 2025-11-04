@@ -1,8 +1,8 @@
 import httpx
-from microservice_user.domain.usuario import Usuario
-from microservice_user.domain.persona import Persona
-from microservice_user.domain.repositories import IUsuarioRepository, IPersonaRepository
-from microservice_user.core.jwt_config import JWTManager
+from domain.usuario import Usuario
+from domain.persona import Persona
+from domain.repositories import IUsuarioRepository, IPersonaRepository
+from core.jwt_config import JWTManager
 
 
 class UsuarioService:

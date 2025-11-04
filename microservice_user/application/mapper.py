@@ -1,6 +1,6 @@
-from microservice_user.api.schemas import UsuarioRegistro
-from microservice_user.domain.usuario import Usuario
-from microservice_user.domain.persona import Persona
+from api.schemas import UsuarioRegistro
+from domain.usuario import Usuario
+from domain.persona import Persona
 
 
 def usuario_registro_to_persona(usuario_data: UsuarioRegistro) -> Persona:

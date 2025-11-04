@@ -1,5 +1,5 @@
 from sqlmodel import SQLModel, Field, Relationship
-from microservice_user.domain.usuario import RolEnum
+from domain.usuario import RolEnum
 
 
 class PersonaModel(SQLModel, table=True):

@@ -1,10 +1,10 @@
 from sqlmodel import Session, select
 from sqlalchemy.exc import IntegrityError
-from microservice_user.domain.repositories import IPersonaRepository, IUsuarioRepository
-from microservice_user.domain.persona import Persona
-from microservice_user.domain.usuario import Usuario
-from microservice_user.infrastructure.modelsSQL import PersonaModel, UsuarioModel
-from microservice_user.infrastructure.engine import engine
+from domain.repositories import IPersonaRepository, IUsuarioRepository
+from domain.persona import Persona
+from domain.usuario import Usuario
+from infrastructure.modelsSQL import PersonaModel, UsuarioModel
+from infrastructure.engine import engine
 
 
 class PersonaRepository(IPersonaRepository):

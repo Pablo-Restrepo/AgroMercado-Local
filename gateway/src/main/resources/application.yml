@@ -12,9 +12,9 @@ spring:
             - name: jwtAuthenticationFilter
               args:
                 publicEndpoints:
-                  - path: /usuarios/registro
+                  - path: /api/usuarios/registro
                     methods: [POST]
-                  - path: /usuarios/login
+                  - path: /api/usuarios/login
                     methods: [POST]
         - id: sales-microservice
           uri: lb://sales-microservice     
@@ -25,9 +25,15 @@ spring:
         - id: productors-microservice
           uri: lb://productors-microservice
           predicates:
-            - Path=/api/v1/productores/**,/api/v1/gremios/**
+            - Path=/api/productores/**,/api/gremios/**
           filters:
             - name: jwtAuthenticationFilter
+              args:
+                publicEndpoints:
+                  - path: /api/productores/**
+                    methods: [GET]
+                  - path: /api/gremios/**
+                    methods: [GET]                    
         - id: products-microservice
           uri: lb://products-microservice
           predicates:

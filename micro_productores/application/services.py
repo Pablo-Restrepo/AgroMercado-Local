@@ -2,6 +2,8 @@ from domain.repository import IGremioRepository, IProductorRepository
 from application.dtos import CrearProductorDTO, GremioResponseDTO, ProductorResponseDTO, CrearGremioDTO, RegistrarProductorEnGremioDTO
 from application.mapper import productorDTO_a_productor, productorDTO_a_productor_admin
 from application.usuario_service import eliminar_usuario_por_id, registrar_usuario
+from infra.publisher_rabbitmq import publish_productor_registration
+
 
 class ProductorService:
     def __init__(self, productor_repo: IProductorRepository, gremio_repo: IGremioRepository):        
@@ -29,6 +31,15 @@ class ProductorService:
             try:
                 productor.u_id = response.get("data").get("u_id")
                 productor.id = await self.productor_repo.agregar_productor(productor)
+                productor_data = {
+                    "prod_id": productor.id,
+                    "prod_nombre": productor.nombres,
+                    "prod_apellido": productor.apellidos,
+                    "prod_cod_gremio": productor.id_gremio,
+                    "prod_nombre_gremio": gremio.nombre if productor.id_gremio else None
+                }
+                #Enviar registro de productor al micro de productos
+                publish_productor_registration(productor_data)
             except Exception as e:
                 #Se envia petición para eliminar el usuario creado
                 eliminar_usuario_por_id(productor.u_id)
@@ -41,6 +52,11 @@ class ProductorService:
         return [ProductorResponseDTO.model_validate(p,from_attributes=True) for p in productores if p.es_activo]
     async def obtener_productor(self, id) -> ProductorResponseDTO:
         productor = await self.productor_repo.obtener_productor_por_id(id)
+        if not productor:
+            raise ValueError("Productor no encontrado")
+        return ProductorResponseDTO.model_validate(productor,from_attributes=True)
+    async def obtener_productor_por_user_id(self, user_id) -> ProductorResponseDTO:
+        productor = await self.productor_repo.obtener_productor_por_user_id(user_id)
         if not productor:
             raise ValueError("Productor no encontrado")
         return ProductorResponseDTO.model_validate(productor,from_attributes=True)
@@ -60,6 +76,7 @@ class ProductorService:
             raise ValueError(f"Campos obligatorios faltantes: {', '.join(faltantes)}")              
         productor.id = await self.productor_repo.agregar_productor(productor)        
         return ProductorResponseDTO.model_validate(productor,from_attributes=True)
+    
 class GremioService:    
     def __init__(self, gremio_repo: IGremioRepository, productor_repo: IProductorRepository):
         self.gremio_repo = gremio_repo
@@ -72,11 +89,22 @@ class GremioService:
         
         try:
             admin = await self.productor_repo.obtener_productor_por_id(id_admin)
+            if not admin:
+                raise ValueError("Productor administrador no encontrado")            
             gremio = admin.crear_gremio(gremio.nombre)            
             id_gremio = await self.gremio_repo.agregar_gremio(gremio)
             gremio.id = id_gremio
             admin.id_gremio = id_gremio            
             await self.productor_repo.actualizar_productor(admin)
+            productor_data = {
+                    "prod_id": admin.id,
+                    "prod_nombre": admin.nombres,
+                    "prod_apellido": admin.apellidos,
+                    "prod_cod_gremio": admin.id_gremio,
+                    "prod_nombre_gremio": gremio.nombre if admin.id_gremio else None
+                }
+            #Enviar registro de productor al micro de productos
+            publish_productor_registration(productor_data)
         except Exception as e:
             raise ValueError(f"Error creando el gremio: {e}")                                
         return GremioResponseDTO.model_validate(gremio,from_attributes=True)

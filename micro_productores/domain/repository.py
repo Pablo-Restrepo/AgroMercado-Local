@@ -30,6 +30,9 @@ class IProductorRepository(ABC):
     def obtener_productor_por_id(self, id) -> Productor:
         pass
     @abstractmethod
+    def obtener_productor_por_user_id(self, user_id) -> Productor:
+        pass
+    @abstractmethod
     def actualizar_productor(self, productor: Productor):
         pass
     @abstractmethod

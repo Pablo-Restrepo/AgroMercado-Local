@@ -4,7 +4,7 @@ import requests
 def registrar_usuario(usuario:UsuarioRegistro):
     """Funcion que llama al microservicio de usuarios para registrar un nuevo usuario"""
     #TODO Tratar de incorporar el llamado al micro de usuarios por medio de Eureka
-    url = "http://127.0.0.1:8001/usuarios/registro"
+    url = "http://localhost:8090/api/usuarios/registro"
     payload = usuario.model_dump()
     headers = {
         "Content-Type": "application/json"
@@ -20,7 +20,7 @@ def registrar_usuario(usuario:UsuarioRegistro):
 def eliminar_usuario_por_id(usuario_id: int):
     """Funcion que llama al microservicio de usuarios para eliminar un usuario por su ID"""
     #TODO Tratar de incorporar el llamado al micro de usuarios por medio de Eureka
-    url = f"http://microservice_user:8000/usuarios/{usuario_id}"
+    url = f"http://localhost:8090/api/usuarios/{usuario_id}"
     headers = {
         "Content-Type": "application/json"
     }

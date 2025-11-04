@@ -1,6 +1,13 @@
 # Este archivo define las entidades del dominio y sus relaciones
 from typing import List
 
+from enum import Enum
+
+class RolEnum(str, Enum):
+    PRODUCTOR_ADMIN = "productor-admin"
+    PRODUCTOR_AFILIADO = "productor-afiliado"
+    CLIENTE = "cliente"
+
 class Persona:
     def __init__(self, id, nombres, apellidos):
         self.id = id
@@ -12,20 +19,21 @@ class Productor(Persona):
         super().__init__(id, nombres, apellidos)        
         self.codigo = codigo
         self.id_gremio = id_gremio
-        #Puede ser 'ADMIN','MIEMBRO' o None
+        #Los roles están definidos en RolEnum
         self.rol = rol
         self.es_activo = es_activo
         self.u_id = u_id
     #Métodos de negocio
     def eliminar_productor(self):
         self.es_activo = False
-        self.id_gremio = None
-        self.rol = None
+        self.id_gremio = None        
     def es_activo(self) -> bool:
         return self.es_activo
     def crear_gremio(self, nombre_gremio):
-        if self.rol != 'ADMIN':
+        if self.rol != RolEnum.PRODUCTOR_ADMIN:
             raise ValueError("Solo un productor con rol ADMIN puede crear un gremio")
+        if self.id_gremio is not None:
+            raise ValueError("El productor ya pertenece a un gremio")
         gremio = Gremio(None,nombre=nombre_gremio, productores=[self])        
         return gremio
 
@@ -46,11 +54,11 @@ class Gremio:
             raise ValueError("El productor ya pertenece al gremio")
         self.productores.append(productor)
         productor.id_gremio = self.id
-        productor.rol = 'MIEMBRO'        
+        productor.rol = RolEnum.PRODUCTOR_AFILIADO        
 
     def remover_productor(self, productor:Productor):
         self.productores = [p for p in self.productores if p.id != productor.id]
-        if productor.rol == 'ADMIN':
+        if productor.rol == RolEnum.PRODUCTOR_ADMIN:
             raise ValueError("No se puede remover al administrador del gremio")
         productor.id_gremio = None
         productor.rol = None
@@ -63,6 +71,6 @@ class Gremio:
     
     def obtener_admin(self) -> Productor:
         for productor in self.productores:
-            if productor.rol == 'ADMIN':
+            if productor.rol == RolEnum.PRODUCTOR_ADMIN:
                 return productor
         return None

@@ -13,3 +13,10 @@ async def init_db():
     from infra.db.modelsSQL import GremioModel,ProductorModel
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
+
+async def close_db():
+    """Cerrar/disponer el engine async y sus pools antes de que se cierre el event loop."""
+    try:
+        await engine.dispose()
+    except Exception:        
+        pass

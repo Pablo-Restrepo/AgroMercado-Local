@@ -37,7 +37,8 @@ class GremioRepositorySQL(IGremioRepository):
                             apellidos=p.prod_apellidos,
                             id_gremio=g.gre_id,
                             rol=(p.prod_rol if p.prod_rol != "NONE" else None),
-                            es_activo=bool(p.prod_es_activo)
+                            es_activo=bool(p.prod_es_activo),
+                            u_id=p.u_id
                         )
                         for p in g.productores
                     ]
@@ -60,7 +61,8 @@ class GremioRepositorySQL(IGremioRepository):
                         apellidos=p.prod_apellidos,
                         id_gremio=gremio.gre_id,
                         rol=(p.prod_rol if p.prod_rol != "NONE" else None),
-                        es_activo=bool(p.prod_es_activo)
+                        es_activo=bool(p.prod_es_activo),
+                        u_id=p.u_id
                     )
                     for p in gremio.productores
                 ]
@@ -84,7 +86,8 @@ class GremioRepositorySQL(IGremioRepository):
                         apellidos=p.prod_apellidos,
                         id_gremio=orm.gre_id,
                         rol=(p.prod_rol if p.prod_rol != "NONE" else None),
-                        es_activo=bool(p.prod_es_activo)
+                        es_activo=bool(p.prod_es_activo),
+                        u_id=p.u_id
                     )
                     for p in orm.productores
                 ]
@@ -149,6 +152,24 @@ class ProductorRepositorySQL(IProductorRepository):
                     u_id=orm.u_id
                 )
             logger.warning(f"Productor no encontrado: {id}")
+            return None
+
+    async def obtener_productor_por_user_id(self, user_id) -> Productor:
+        async with async_session() as session:
+            orm = await session.execute(select(ProductorModel).where(ProductorModel.u_id == user_id))
+            orm = orm.scalars().first()
+            if orm:
+                return Productor(
+                    id=orm.prod_id,
+                    codigo=orm.prod_codigo,
+                    nombres=orm.prod_nombres,
+                    apellidos=orm.prod_apellidos,
+                    id_gremio=(orm.gre_id if orm.gre_id is not None else None),
+                    rol=(orm.prod_rol if orm.prod_rol != "NONE" else None),
+                    es_activo=bool(orm.prod_es_activo),
+                    u_id=orm.u_id
+                )
+            logger.warning(f"Productor no encontrado por id de usuario: {user_id}")
             return None
 
     async def actualizar_productor(self, productor: Productor):

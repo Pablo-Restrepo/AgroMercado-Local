@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-from microservice_user.domain.persona import Persona
-from microservice_user.domain.usuario import Usuario
+from domain.persona import Persona
+from domain.usuario import Usuario
 
 
 class IPersonaRepository(ABC):

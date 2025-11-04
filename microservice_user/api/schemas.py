@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from microservice_user.domain.usuario import RolEnum
+from domain.usuario import RolEnum
 
 
 class PersonaRegistro(BaseModel):

@@ -16,8 +16,7 @@ class UsuarioRegistro(BaseModel):
 class RegistrarProductorEnGremioDTO(BaseModel):    
     #El codigo no es obligatorio porque se puede generar automáticamente
     codigo: str | None = Field(None,max_length=10, json_schema_extra={"example": "PROD123", "description": "Código único del productor"})    
-    id_gremio: int | None = Field(None, json_schema_extra={"example": 1, "description": "ID del gremio al que pertenece el productor"})
-    rol: str | None = Field(default="NONE", pattern="^(ADMIN|MIEMBRO|NONE)$", json_schema_extra={"example": "MIEMBRO", "description": "Rol del productor en el gremio (si pertenece a uno)"})
+    id_gremio: int = Field(..., json_schema_extra={"example": 1, "description": "ID del gremio al que pertenece el productor"})
     #Se asocia el usuario para capturar los datos que posteriormente se van
     #a enviar al micro de usuarios
     usuario: UsuarioRegistro
