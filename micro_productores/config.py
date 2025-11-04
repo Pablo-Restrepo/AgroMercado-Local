@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256" 
     EUREKA_APP_NAME: str = 'productors-microservice'
     EUREKA_INSTANCE_PORT: int = 8000
+    EUREKA_INSTANCE_HOST: str = 'localhost'
     EUREKA_SERVER_URL: str = 'http://localhost:8761/eureka'
     model_config = ConfigDict(
         env_file='.env',

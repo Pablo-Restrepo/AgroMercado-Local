@@ -85,7 +85,8 @@ services:
       QUEUE_NAME: user_registrations
       SECRET_KEY: ${SECRET_KEY}
       ALGORITHM: HS256
-      EUREKA_SERVER: http://eureka-server:8761/eureka/
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka/
+      EUREKA_INSTANCE_HOST: micro-productores
     depends_on:
       mysql:
         condition: service_healthy
@@ -106,10 +107,13 @@ services:
     ports:
       - "8001:8001"
     environment:
-      DB_HOST: 127.0.0.1
-      DATABASE_URL: mysql+pymysql://root:root@mysql:3306/microservice_user_bd
-      EUREKA_SERVER: http://eureka-server:8761/eureka/
-      RABBIT_URL: amqp://guest:guest@rabbitmq:5672/
+      DB_HOST: mysql:3306
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: microservice_user_bd
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka/
+      EUREKA_INSTANCE_HOST: micro-users
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
       SECRET_KEY: ${SECRET_KEY}
     depends_on:
       mysql:
