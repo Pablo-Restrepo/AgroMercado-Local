@@ -18,6 +18,7 @@ mysql -u root -p
 pip freeze > requirements.txt
 
 # Docker compose
+*Importante:* Se debe tener un archivo .env en la carpeta raiz que contenga la SECRET_KEY
 Para levantar el proyecto, debe ubicarse en la carpeta raiz ".../Agromercado-Local" y ejecutar:
 - docker compose up
 Si desea realizar un cambio en los micros después de haber hecho docker compose, asegurese de eliminar la imagen creada de ese micro y volver a ejecutar el comando anterior.

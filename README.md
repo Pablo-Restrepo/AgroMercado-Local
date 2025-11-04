@@ -20,23 +20,21 @@ Las reglas negocios estan relacionadas a la gestion de pedidos:
 
 ## Instalación
 
+Para ejecutar este proyecto debes tener instalado Docker.
+
 1. Clona el repositorio:
    ```sh
    git clone https://github.com/Pablo-Restrepo/AgroMercado-Local.git
    cd AgroMercado-Local
    ```
 
-2. Instala las dependencias:
-    ```sh
-    pip install -r requirements.txt
-    ```
+2. Compila los proyectos de Java (Ingresa al README de Eureka y Gateway)    
 
 ## Ejecución
 Inicia el servidor de desarrollo:
 
    ```sh
-   python -m uvicorn app.main:app --reload
+   docker compose up
    ```
    
-Accede a la documentación interactiva en:
-http://localhost:8000/docs
+Para interactuar con el Back se debe realizar por medio de la api gateway, la cual estará localizada en http:localhost:8090
