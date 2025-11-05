@@ -1,11 +1,10 @@
-from typing import Optional
 from sqlmodel import Session, select
 from sqlalchemy.exc import IntegrityError
-from microservice_user.domain.repositories import IPersonaRepository, IUsuarioRepository
-from microservice_user.domain.persona import Persona
-from microservice_user.domain.usuario import Usuario
-from microservice_user.infrastructure.modelsSQL import PersonaModel, UsuarioModel
-from microservice_user.infrastructure.engine import engine
+from domain.repositories import IPersonaRepository, IUsuarioRepository
+from domain.persona import Persona
+from domain.usuario import Usuario
+from infrastructure.modelsSQL import PersonaModel, UsuarioModel
+from infrastructure.engine import engine
 
 
 class PersonaRepository(IPersonaRepository):
@@ -56,7 +55,7 @@ class PersonaRepository(IPersonaRepository):
                         f"Ya existe una persona con la cédula {persona.p_cedula}")
                 raise ValueError("Error al guardar la persona")
 
-    def find_by_id(self, persona_id: int) -> Optional[Persona]:
+    def find_by_id(self, persona_id: int) -> Persona | None:
         """
         Busca una persona por ID y la convierte a entidad de dominio.
         """
@@ -69,7 +68,7 @@ class PersonaRepository(IPersonaRepository):
 
             return self._model_to_domain(persona_model)
 
-    def find_by_cedula(self, cedula: str) -> Optional[Persona]:
+    def find_by_cedula(self, cedula: str) -> Persona | None:
         """
         Busca una persona por cédula y la convierte a entidad de dominio.
         """
@@ -105,6 +104,19 @@ class PersonaRepository(IPersonaRepository):
             p_telefono=persona_model.p_telefono
         )
 
+    def delete_persona(self, persona_id: int) -> None:
+        """
+        Elimina una persona por su ID.
+        Lanza ValueError si no existe.
+        """
+        with Session(engine) as session:
+            stmt = select(PersonaModel).where(PersonaModel.p_id == persona_id)
+            persona_model = session.exec(stmt).first()
+            if not persona_model:
+                raise ValueError(f"La persona con id {persona_id} no existe")
+            session.delete(persona_model)
+            session.commit()
+
 
 class UsuarioRepository(IUsuarioRepository):
     """
@@ -129,6 +141,7 @@ class UsuarioRepository(IUsuarioRepository):
                     u_nombre_usuario=usuario.u_nombre_usuario,
                     u_contrasenia=usuario.u_contrasenia,
                     u_email=usuario.u_email,
+                    u_rol=usuario.u_rol,
                     p_id=usuario.p_id
                 )
                 session.add(usuario_model)
@@ -152,7 +165,7 @@ class UsuarioRepository(IUsuarioRepository):
             usuario_model = session.exec(stmt).first()
             return usuario_model is not None
 
-    def find_by_id(self, usuario_id: int) -> Optional[Usuario]:
+    def find_by_id(self, usuario_id: int) -> Usuario | None:
         """
         Busca un usuario por ID y lo convierte a entidad de dominio.
         """
@@ -165,7 +178,7 @@ class UsuarioRepository(IUsuarioRepository):
 
             return self._model_to_domain(usuario_model)
 
-    def find_by_email(self, email: str) -> Optional[Usuario]:
+    def find_by_email(self, email: str) -> Usuario | None:
         """
         Busca un usuario por email y lo convierte a entidad de dominio.
         """
@@ -183,13 +196,27 @@ class UsuarioRepository(IUsuarioRepository):
             stmt = select(
                 UsuarioModel.u_id,
                 UsuarioModel.u_nombre_usuario,
-                UsuarioModel.u_email
+                UsuarioModel.u_email,
+                UsuarioModel.u_rol  # Add this field
             ).where(
                 UsuarioModel.u_email == email,
                 UsuarioModel.u_contrasenia == password,
             )
             row = session.exec(stmt).first()
             return tuple(row) if row else None
+
+    def delete_usuario(self, usuario_id: int) -> None:
+        """
+        Elimina un usuario por su ID.
+        Lanza ValueError si no existe.
+        """
+        with Session(engine) as session:
+            stmt = select(UsuarioModel).where(UsuarioModel.u_id == usuario_id)
+            usuario_model = session.exec(stmt).first()
+            if not usuario_model:
+                raise ValueError(f"El usuario con id {usuario_id} no existe")
+            session.delete(usuario_model)
+            session.commit()
 
     def _model_to_domain(self, usuario_model: UsuarioModel) -> Usuario:
         """
@@ -200,5 +227,6 @@ class UsuarioRepository(IUsuarioRepository):
             u_nombre_usuario=usuario_model.u_nombre_usuario,
             u_contrasenia=usuario_model.u_contrasenia,
             u_email=usuario_model.u_email,
-            p_id=usuario_model.p_id
+            p_id=usuario_model.p_id,
+            u_rol=usuario_model.u_rol
         )

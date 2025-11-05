@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from domain.usuario import RolEnum
 
 
 class PersonaRegistro(BaseModel):
@@ -14,6 +15,7 @@ class UsuarioRegistro(BaseModel):
     u_nombre_usuario: str
     u_contrasenia: str
     u_email: str
+    u_rol: RolEnum = RolEnum.CLIENTE
     persona: PersonaRegistro
 
 
@@ -26,6 +28,7 @@ class UsuarioLoginResponse(BaseModel):
     u_id: int
     u_nombre_usuario: str
     u_email: str
+    u_rol: str
     access_token: str
     refresh_token: str
     token_type: str

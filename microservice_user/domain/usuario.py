@@ -1,13 +1,20 @@
-# filepath: microservice-user/domain/usuario.py
-# Clase usuario
+from enum import Enum
+
+
+class RolEnum(str, Enum):
+    PRODUCTOR_ADMIN = "productor-admin"
+    PRODUCTOR_AFILIADO = "productor-afiliado"
+    CLIENTE = "cliente"
+
 
 class Usuario:
-    def __init__(self, u_id: int, u_nombre_usuario: str, u_contrasenia: str, u_email: str, p_id: int):
+    def __init__(self, u_id: int, u_nombre_usuario: str, u_contrasenia: str, u_email: str, p_id: int, u_rol: RolEnum):
         self.u_id = u_id
         self.u_nombre_usuario = u_nombre_usuario
         self.u_contrasenia = u_contrasenia
         self.u_email = u_email
-        self.p_id = p_id  # Foreign key a Persona
+        self.p_id = p_id
+        self.u_rol = u_rol
 
     def ejecutar_validaciones(self):
         for metodo in self._metodos_validacion():
