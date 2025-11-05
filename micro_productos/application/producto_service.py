@@ -2,7 +2,7 @@
 import base64
 
 from bson import Binary
-from api.esquemas import ProductoRegistro, ProductoConsulta, ProductorConsulta
+from api.esquemas import ProductoRegistro, ProductoConsulta, ProductorRegistroConsulta
 from core.events import event_manager
 from infrastructure.int_command_repository import IProductoCommandRepository
 from infrastructure.int_query_repository import IProductoQueryRepository
@@ -25,7 +25,7 @@ class ProductoService:
         Retorna el id del producto creado.
         """
         producto_id = await self.command_repo.save_producto(producto=producto_datos)
-        productor:ProductorConsulta = await self.command_repo.get_productor(prod_id=producto_datos.prod_id)
+        productor:ProductorRegistroConsulta = await self.command_repo.get_productor(prod_id=producto_datos.prod_id)
         
         event_data = {
             "p_id": producto_id,
@@ -47,6 +47,8 @@ class ProductoService:
         await event_manager.notify("producto_creado", event_data)
 
         return producto_id
+    async def registrar_productor(self, productor_data:ProductorRegistroConsulta):
+        return await self.command_repo.save_productor(productor_data)
 
     async def editar_producto(self, p_id: int, producto_datos: ProductoRegistro) -> int:
         """

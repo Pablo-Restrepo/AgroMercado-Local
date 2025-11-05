@@ -36,9 +36,10 @@ class ProductoConsulta(BaseModel):
     p_precio : float
     img : str
 
-class ProductorConsulta(BaseModel):
+class ProductorRegistroConsulta(BaseModel):
     prod_id: int
     prod_nombre: str
     prod_apellido:str
     prod_cod_gremio: int
     prod_nombre_gremio: str
+
