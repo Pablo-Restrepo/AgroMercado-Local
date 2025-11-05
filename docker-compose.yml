@@ -1,0 +1,134 @@
+services:
+  # MySQL compartido
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-server
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - microservices-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq-server
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - microservices-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Eureka Server
+  eureka-server:
+    build:
+      context: ./eureka
+      dockerfile: Dockerfile
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - microservices-network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8761/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  # Gateway
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: gateway
+    ports:
+      - "8090:8090"
+    environment:
+      SECRET_KEY: ${SECRET_KEY}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - microservices-network
+    restart: on-failure
+
+  # Microservicio Productores
+  micro-productores:
+    build:
+      context: ./micro_productores
+      dockerfile: Dockerfile
+    container_name: micro-productores
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: mysql+aiomysql://root:root@mysql:3306/micro_productores_db
+      RABBIT_URL: amqp://guest:guest@rabbitmq:5672/
+      QUEUE_NAME: user_registrations
+      SECRET_KEY: ${SECRET_KEY}
+      ALGORITHM: HS256
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka/
+      EUREKA_INSTANCE_HOST: micro-productores
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - microservices-network
+    restart: on-failure
+
+  # Microservicio Users (ajusta según tu estructura)
+  micro-users:
+    build:
+      context: ./microservice_user
+      dockerfile: Dockerfile
+    container_name: micro-users
+    ports:
+      - "8001:8001"
+    environment:
+      DB_HOST: mysql:3306
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: microservice_user_bd
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka/
+      EUREKA_INSTANCE_HOST: micro-users
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      SECRET_KEY: ${SECRET_KEY}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - microservices-network
+    restart: on-failure
+
+volumes:
+  mysql-data:
+
+networks:
+  microservices-network:
+    driver: bridge
