@@ -1,0 +1,18 @@
+from mongoengine import Document,EmbeddedDocument, StringField, IntField, FloatField, EmbeddedDocumentField, BinaryField
+
+
+class Productor(EmbeddedDocument):
+    prod_id = IntField()
+    prod_nombre= StringField()
+    prod_apellido = StringField()
+    prod_cod_gremio = IntField()
+    prod_nombre_gremio = StringField()
+
+class Producto(Document):
+    p_id = IntField(required=True,primary_key=True)
+    p_nombre = StringField(required=True)
+    p_tipo = StringField(required=True)
+    p_unidad = StringField(required=True)
+    p_precio = FloatField(required=True)
+    productor = EmbeddedDocumentField(Productor)
+    imagen = BinaryField()
