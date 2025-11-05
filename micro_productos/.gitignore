@@ -135,7 +135,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
+# .env uncomment in production or when you have sensitive variables
 .envrc
 .venv
 env/
