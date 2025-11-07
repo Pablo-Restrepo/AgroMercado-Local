@@ -1,2 +1,3 @@
 CREATE DATABASE IF NOT EXISTS micro_productores_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE DATABASE IF NOT EXISTS microservice_user_bd CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS microservice_productos_bd CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

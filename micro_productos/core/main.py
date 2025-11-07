@@ -45,7 +45,6 @@ async def lifespan(app: FastAPI):
     #registrar en Eureka
     try:
         await eureka_client.start() 
-        #pass # Se desactiva el registro mientras se configura la autorización
     except Exception as e:        
         logger.error(f"Error al registrar en Eureka: {e}")
         pass
