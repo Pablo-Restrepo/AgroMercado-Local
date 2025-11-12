@@ -25,6 +25,7 @@ services:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: admin123
       MONGO_INITDB_DATABASE: productos_db
+    command: ["mongod", "--quiet", "--logpath", "/dev/null"]
     ports:
       - "27017:27017"
     volumes:
@@ -40,7 +41,7 @@ services:
       start_period: 30s
   # RabbitMQ
   rabbitmq:
-    image: rabbitmq:3-management
+    image: rabbitmq:4-management
     container_name: rabbitmq-server
     ports:
       - "5672:5672"
@@ -103,10 +104,13 @@ services:
       DATABASE_URL: mysql+aiomysql://root:root@mysql:3306/micro_productores_db
       RABBIT_URL: amqp://guest:guest@rabbitmq:5672/
       QUEUE_NAME: user_registrations
+      PRODUCTORS_QUEUE: productors_registrations
       SECRET_KEY: ${SECRET_KEY}
       ALGORITHM: HS256
+      EUREKA_APP_NAME: micro-productores
       EUREKA_SERVER_URL: http://eureka-server:8761/eureka/
       EUREKA_INSTANCE_HOST: micro-productores
+      EUREKA_INSTANCE_PORT: 8000
     depends_on:
       mysql:
         condition: service_healthy
@@ -149,15 +153,7 @@ services:
     build:
       context: ./micro_productos
       dockerfile: Dockerfile
-    container_name: micro-productos
-    restart: always
-    depends_on:
-      productos_db_mongo:
-        condition: service_healthy
-      mysql:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
+    container_name: micro-productos    
     ports:
       - "8002:8002"
     environment:
@@ -188,6 +184,14 @@ services:
       EUREKA_INSTANCE_PORT: 8002
       EUREKA_INSTANCE_HOST: micro_productos
       EUREKA_HOST: eureka-server
+    restart: on-failure
+    depends_on:
+      productos_db_mongo:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     networks:
       - microservices-network
 
