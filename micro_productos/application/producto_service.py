@@ -33,6 +33,7 @@ class ProductoService:
             "p_tipo": producto_datos.p_tipo,
             "p_unidad": producto_datos.p_unidad,
             "p_precio": producto_datos.p_precio,
+            "p_stock": producto_datos.p_stock,
             "imagen":producto_datos.img,
             "productor": {
                 "prod_id": producto_datos.prod_id,

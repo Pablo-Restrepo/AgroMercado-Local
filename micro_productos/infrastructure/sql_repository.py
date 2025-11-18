@@ -14,7 +14,7 @@ class SQLCommandRepository(IProductoCommandRepository):
         async with async_session() as session:
             imagen = base64.b64decode(producto.img)
             producto_model = ProductoModel(p_nombre=producto.p_nombre,p_precio = producto.p_precio, prod_id = producto.prod_id,
-                                           p_tipo=producto.p_tipo, p_unidad=producto.p_unidad, imagen=imagen)
+                                           p_tipo=producto.p_tipo, p_unidad=producto.p_unidad, p_stock=producto.p_stock, imagen=imagen)
             session.add(producto_model)
             await session.commit()
             await session.refresh(producto_model)            
@@ -44,6 +44,8 @@ class SQLCommandRepository(IProductoCommandRepository):
             db_producto.p_tipo = producto.p_tipo
             db_producto.p_unidad = producto.p_unidad
             db_producto.imagen = producto.img
+            db_producto.p_stock = producto.p_stock
+
 
             # Confirmar los cambios
             await session.commit()
