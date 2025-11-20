@@ -28,8 +28,8 @@ class Settings(BaseSettings):
     RABBIT_PASS: str
     RABBIT_HOST: str
     RABBIT_PORT: int
-    PRODUCTORS_QUEUE: str
-
+    PRODUCTORES_ASOCIADOS_QUEUE: str
+    PRODUCTORES_ADMIN_QUEUE: str
     # eureka
     EUREKA_APP_NAME: str
     EUREKA_INSTANCE_PORT: int

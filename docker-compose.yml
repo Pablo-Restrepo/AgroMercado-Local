@@ -177,7 +177,8 @@ services:
       RABBIT_PASS: guest
       RABBIT_HOST: rabbitmq
       RABBIT_PORT: 5672
-      PRODUCTORS_QUEUE: productors_registrations
+      PRODUCTORES_ASOCIADOS_QUEUE: productors_registrations
+      PRODUCTORES_ADMIN_QUEUE: user_registrations
 
       # --- EUREKA ---
       EUREKA_APP_NAME: products-microservice
