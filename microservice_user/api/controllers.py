@@ -172,3 +172,45 @@ def eliminar_usuario(
             status_code=400,
             detail="Error al eliminar usuario"
         )
+
+@router.get(
+    "/usuarios/me",
+    summary="Obtener usuario autenticado",
+    description="Devuelve los datos del usuario actual según el email del token.",
+    response_model=APIResponse,
+    responses={
+        200: {"description": "Usuario autenticado encontrado"},
+        401: {"description": "No autenticado o token inválido"},
+        404: {"description": "Usuario no encontrado"}
+    }
+)
+def obtener_usuario_actual(
+    current_user: dict = Depends(get_current_user),
+    usuario_service: UsuarioService = Depends(get_usuario_service)
+):
+    try:
+        email = current_user.get("email")
+        if not email:
+            raise HTTPException(status_code=401, detail="Token inválido o sin email")
+
+        usuario = usuario_service.usuario_repository.find_by_email(email)
+        if not usuario:
+            raise HTTPException(status_code=404, detail=f"Usuario con email {email} no encontrado")
+
+        persona = None
+        if getattr(usuario, "p_id", None):
+            persona = usuario_service.persona_repository.find_by_id(usuario.p_id)
+
+        data = {
+            "u_id": usuario.u_id,
+            "nombres": persona.p_nombre if persona else None,
+            "apellidos": persona.p_apellido if persona else None,
+            "email": usuario.u_email,
+            "rol": usuario.u_rol
+        }
+
+        return APIResponse(status="success", message="Usuario autenticado", data=data)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Error interno del servidor") from e

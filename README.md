@@ -37,4 +37,9 @@ Inicia el servidor de desarrollo:
    docker compose up
    ```
    
+Accede a la documentación interactiva en:
+http://localhost:8000/docs
+
+## Iniciar el venv (desde la raíz del proyecto)
+.\venv\Scripts\activate.bat  
 Para interactuar con el Back se debe realizar por medio de la api gateway, la cual estará localizada en http:localhost:8090
