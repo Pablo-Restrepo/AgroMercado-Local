@@ -70,3 +70,5 @@ class ProductoController:
     
     def listar_por_productor(self, prod_id: int):
         return self.service.listar_productos_por_productor(prod_id)
+    
+    

@@ -1,3 +1,10 @@
 from py_eureka_client.eureka_client import EurekaClient
+from core.config import settings
 
-client = EurekaClient( eureka_server="http://localhost:8761/eureka", app_name="products-microservice", instance_port=8000, instance_host="localhost" )
+
+eureka_client = EurekaClient(
+    eureka_server=settings.EUREKA_SERVER_URL,
+    app_name=settings.EUREKA_APP_NAME,
+    instance_port=settings.EUREKA_INSTANCE_PORT,
+    instance_host=settings.EUREKA_INSTANCE_HOST,
+)

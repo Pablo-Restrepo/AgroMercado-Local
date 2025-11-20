@@ -1,18 +1,22 @@
-# Imagen base
-FROM python:3.11-slim
-
-# Establecer el directorio de trabajo
+FROM python:3.12-slim
 WORKDIR /app
 
-# Copiar archivos del proyecto
-COPY . /app
+# Instalar dependencias del sistema
+RUN apt-get update && apt-get install -y \
+    gcc \
+    default-libmysqlclient-dev \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/*
 
-# Instalar dependencias
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+# Copiar requirements
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Exponer el puerto del servicio FastAPI
-EXPOSE 8000
+# Copiar código fuente
+COPY . .
 
-# Comando para ejecutar la app
-CMD ["uvicorn", "core.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Exponer puerto
+EXPOSE 8002
+
+# Comando de inicio
+CMD ["python", "-m", "uvicorn", "core.main:app", "--host", "0.0.0.0", "--port", "8002"]

@@ -22,8 +22,8 @@ spring:
               - Path=/api/sales**
           filters:
             - name: jwtAuthenticationFilter    
-        - id: productors-microservice
-          uri: lb://productors-microservice
+        - id: micro-productores
+          uri: lb://micro-productores
           predicates:
             - Path=/api/productores/**,/api/gremios/**
           filters:
@@ -37,10 +37,18 @@ spring:
         - id: products-microservice
           uri: lb://products-microservice
           predicates:
-            - Path=/api/**
+            - Path=/api/productos
           filters:
             - name: jwtAuthenticationFilter
               args:
                 publicEndpoints:
                   - path: /api/productos/**
                     methods: [GET]
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:5173"
+            allowedMethods: "GET,POST,PUT,DELETE,OPTIONS"
+            allowedHeaders: "*"
+            allowCredentials: true
+            maxAge: 3600
