@@ -39,3 +39,22 @@ async def on_producto_creado(event_data: dict):
         print(f"[Observer] Producto {event_data['p_nombre']} creado en MongoDB ✅")
     except Exception as e:
         print(f"[Observer] Error al crear producto en MongoDB: {e}")
+
+
+async def on_producto_eliminado(prod_id: int):
+    """
+    Observador que se ejecuta cuando se elimina un producto en MySQL.
+    Elimina el producto correspondiente en MongoDB.
+    """
+    try:
+        # Buscar el producto en MongoDB por su primary key p_id
+        producto = MongoProducto.objects(p_id=prod_id).first()
+
+        if producto:
+            producto.delete()
+            print(f"[Observer] Producto {prod_id} eliminado correctamente en MongoDB.")
+        else:
+            print(f"[Observer] Producto {prod_id} no existe en MongoDB (nada que eliminar).")
+
+    except Exception as e:
+        print(f"[Observer] Error al eliminar producto en MongoDB: {e}")

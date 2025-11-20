@@ -80,18 +80,14 @@ class SQLCommandRepository(IProductoCommandRepository):
         """
         async with async_session() as session:
             try:
-                # Ejecutar la sentencia DELETE
-                stmt = delete(ProductoModel).where(ProductoModel.p_id == p_id)
-                result = await session.execute(stmt)
 
+                db_producto = await session.get(ProductoModel, p_id)
+                if not db_producto:
+                    logger.warning(f"Producto con id={p_id} no encontrado")
+                    return 0  # o puedes lanzar una excepción
                 # Confirmar la transacción
+                db_producto.p_estado = False
                 await session.commit()
-
-                # result.rowcount indica cuántas filas fueron afectadas
-                if result.rowcount == 0:
-                    logger.warning(f"Producto con id={p_id} no encontrado.")
-                    return 0
-
                 logger.info(f"Producto con id={p_id} eliminado correctamente.")
                 return 1
 

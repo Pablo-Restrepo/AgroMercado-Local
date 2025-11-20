@@ -25,4 +25,5 @@ class ProductoModel(SQLModel, table=True):
     prod_id:int = Field(default=None, foreign_key="productor.prod_id")
     p_precio:float = Field(default=0)
     p_stock: int  = Field(default=0)
+    p_estado: bool = Field(default=True)
     imagen: Optional[bytes] = Field(default=None, sa_type=LargeBinary(length=(2**24)))

@@ -63,6 +63,7 @@ class ProductoService:
         Elimina un producto de la base de datos.
         Retorna el id del producto eliminado.
         """
+        await event_manager.notify("producto_eliminado", p_id)
         return await self.command_repo.delete_producto(p_id=p_id)
 
     # ==========================================================
