@@ -4,33 +4,58 @@ from unittest.mock import AsyncMock, Mock
 from pydantic import ValidationError
 import pytest
 from pytest_mock import mocker
-from application.producto_service import ProductoService
 from api.esquemas import ProductoConsulta, ProductoRegistro, ProductorRegistroConsulta
+from application.producto_service import ProductoService
 
 @pytest.fixture
-def producto_invalido():
+def producto_precio_invalido():
     """
     Fixture que intenta crear un ProductoRegistro con datos inválidos.
     Se usa dentro de pruebas que esperan ValidationError.
     """
-    # Este diccionario viola el tipo de 'p_precio' (string en vez de float)
+    # Este diccionario viola la restriccion de que p_precio debe ser mayor a 0
     datos_invalidos = {
         "p_nombre": "Manzanas Fuji",
         "p_tipo": "Fruta",
         "p_unidad": "kg",
         "prod_id": 101,
+        "p_stock": 10,
         "img": "/9j/4AAQSkZJRgABAQEASABIAAD//2Q==",
-        "p_precio": "precio_invalido"  # tipo incorrecto
+        "p_precio": -1  # valor invalido
+    }
+    return datos_invalidos
+
+@pytest.fixture
+def producto_stock_invalido():
+    """
+    Fixture que intenta crear un ProductoRegistro con datos inválidos.
+    Se usa dentro de pruebas que esperan ValidationError.
+    """
+    # Este diccionario viola el valor de p_stock que debe ser estrictamente mayor a 0
+    datos_invalidos = {
+        "p_nombre": "Manzanas Fuji",
+        "p_tipo": "Fruta",
+        "p_unidad": "kg",
+        "prod_id": 101,
+        "p_stock": -1,# valor incorrecto
+        "img": "/9j/4AAQSkZJRgABAQEASABIAAD//2Q==",
+        "p_precio": 100  
     }
     return datos_invalidos
 
 @pytest.mark.asyncio
-async def test_registrar_producto_invalido(servicio, producto_invalido):
+async def test_registrar_producto_precio_invalido(servicio, producto_precio_invalido):
     with pytest.raises(ValidationError):
         # Forzamos la validación creando el modelo explícitamente
-        producto = ProductoRegistro(**producto_invalido)
+        producto = ProductoRegistro(**producto_precio_invalido)
         await servicio.registrar_producto(producto)
 
+@pytest.mark.asyncio
+async def test_registrar_producto_stock_invalido(servicio, producto_stock_invalido):
+    with pytest.raises(ValidationError):
+        # Forzamos la validación creando el modelo explícitamente
+        producto = ProductoRegistro(**producto_stock_invalido)
+        await servicio.registrar_producto(producto)
 @pytest.fixture
 def id():
     return 1
@@ -102,6 +127,7 @@ def productos_consulta():
     p_unidad="kg",
     gre_nombre="Asociación de Fruticultores del Valle",
     p_precio=3.5,
+    p_stock= 10,
     img="/9j/4AAQSkZJRgABAQEASABIAAD//2Q==" 
     )
 
@@ -111,6 +137,7 @@ def productos_consulta():
         p_unidad="litro",
         gre_nombre="Cooperativa de Lácteos del Sur",
         p_precio=1.8,
+        p_stock= 10,
         img="iVBORw0KGgoAAAANSUhEUgAAAAUA//8AAABCAQEA"
     )
 
@@ -120,6 +147,7 @@ def productos_consulta():
         p_unidad="kg",
         gre_nombre="Gremio de Productores de Granos Andinos",
         p_precio=2.2,
+        p_stock= 10,
         img="AAAFBfj42Pj4+AAAABJRU5ErkJggg=="
     )
 
@@ -129,6 +157,7 @@ def productos_consulta():
         p_unidad="docena",
         gre_nombre="Asociación de Avicultores Regionales",
         p_precio=4.0,
+        p_stock= 10,
         img="/9j/2wCEAAgGBgcGBQgHBwcJCQgKDBQNDAsL"
     )
 
@@ -138,6 +167,7 @@ def productos_consulta():
         p_unidad="paquete",
         gre_nombre="Cooperativa Cafetera Nacional",
         p_precio=7.5,
+        p_stock= 10,
         img="iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJ"
     )
 
@@ -150,6 +180,7 @@ def productos():
     p_tipo="Fruta",
     p_unidad="kg",
     prod_id=101,
+    p_stock= 10,
     img="/9j/4AAQSkZJRgABAQEASABIAAD//2Q==",
     p_precio=3.5
     )
@@ -159,6 +190,7 @@ def productos():
         p_tipo="Lácteo",
         p_unidad="litro",
         prod_id=102,
+        p_stock = 10,
         img="iVBORw0KGgoAAAANSUhEUgAAAAUA//8AAABCAQEA",
         p_precio=1.8
     )
@@ -168,6 +200,7 @@ def productos():
         p_tipo="Grano",
         p_unidad="kg",
         prod_id=103,
+        p_stock = 10,
         img="AAAFBfj42Pj4+AAAABJRU5ErkJggg==",
         p_precio=2.2
     )
@@ -176,6 +209,7 @@ def productos():
         p_nombre="Huevos Orgánicos",
         p_tipo="Proteína",
         p_unidad="docena",
+        p_stock = 10,
         prod_id=104,
         img="/9j/2wCEAAgGBgcGBQgHBwcJCQgKDBQNDAsL",
         p_precio=4.0
@@ -201,6 +235,7 @@ def producto_actualizado():
                 p_tipo="Fruta",
                 p_unidad="kg",
                 prod_id=101,
+                p_stock = 10,
                 img="/9j/4AAQSkZJRgABAQEASABIAAD//2Q==",
                 p_precio=3.5
                 )
@@ -212,6 +247,7 @@ def producto_valido():
                 p_tipo="Fruta",
                 p_unidad="kg",
                 prod_id=101,
+                p_stock = 10,
                 img="/9j/4AAQSkZJRgABAQEASABIAAD//2Q==",
                 p_precio=3.5
                 )
