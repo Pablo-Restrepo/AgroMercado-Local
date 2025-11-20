@@ -8,7 +8,7 @@ from application.producto_service import ProductoService
 
 class ProductoController:
     def __init__(self, service: ProductoService):
-        self.router = APIRouter(prefix="/productos", tags=["Productos"])
+        self.router = APIRouter(prefix="/api/productos", tags=["Productos"])
         self.service = service
 
         # Mapear rutas a métodos
@@ -70,3 +70,5 @@ class ProductoController:
     
     def listar_por_productor(self, prod_id: int):
         return self.service.listar_productos_por_productor(prod_id)
+    
+    

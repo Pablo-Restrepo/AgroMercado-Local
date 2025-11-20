@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from api.esquemas import ProductoRegistro, ProductoActualizacion, ProductorConsulta
+from api.esquemas import ProductoRegistro, ProductoActualizacion, ProductorRegistroConsulta
 
 from abc import ABC, abstractmethod
 
@@ -18,8 +18,11 @@ class IProductoCommandRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_productor(self, prod_id: int) -> ProductorConsulta:
+    async def get_productor(self, prod_id: int) -> ProductorRegistroConsulta:
         pass
 
+    @abstractmethod
+    async def save_productor(self, productor: ProductorRegistroConsulta) -> int:
+        pass
 
    

@@ -31,6 +31,7 @@ async def on_producto_creado(event_data: dict):
             p_tipo=event_data["p_tipo"],
             p_unidad=event_data["p_unidad"],
             p_precio=event_data["p_precio"],
+            p_stock = event_data["p_stock"],
             productor=mongo_productor,
             imagen = imagen_binary
         ).save()

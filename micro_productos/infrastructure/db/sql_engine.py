@@ -14,3 +14,7 @@ async def init_sql_db():
     # importa modelos que hereden de SQLModel
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
+
+async def close_sql_db():
+    async with engine.begin() as conn:
+        await conn.close()
