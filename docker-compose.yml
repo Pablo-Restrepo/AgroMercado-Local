@@ -17,10 +17,31 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
+  productos_db_mongo:
+    image: mongo:6.0
+    container_name: productos_db_mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: productos_db
+    command: ["mongod", "--quiet", "--logpath", "/dev/null"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - microservices-network
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --username admin --password admin123 --authenticationDatabase admin --eval 'db.runCommand({ ping: 1 }).ok' | grep 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
   # RabbitMQ
   rabbitmq:
-    image: rabbitmq:3-management
+    image: rabbitmq:4-management
     container_name: rabbitmq-server
     ports:
       - "5672:5672"
@@ -83,10 +104,13 @@ services:
       DATABASE_URL: mysql+aiomysql://root:root@mysql:3306/micro_productores_db
       RABBIT_URL: amqp://guest:guest@rabbitmq:5672/
       QUEUE_NAME: user_registrations
+      PRODUCTORS_QUEUE: productors_registrations
       SECRET_KEY: ${SECRET_KEY}
       ALGORITHM: HS256
+      EUREKA_APP_NAME: micro-productores
       EUREKA_SERVER_URL: http://eureka-server:8761/eureka/
       EUREKA_INSTANCE_HOST: micro-productores
+      EUREKA_INSTANCE_PORT: 8000
     depends_on:
       mysql:
         condition: service_healthy
@@ -125,10 +149,55 @@ services:
     networks:
       - microservices-network
     restart: on-failure
+  micro_productos:
+    build:
+      context: ./micro_productos
+      dockerfile: Dockerfile
+    container_name: micro-productos    
+    ports:
+      - "8002:8002"
+    environment:
+      # --- MONGO ---
+      MONGO_HOST: productos_db_mongo
+      MONGO_PORT: 27017
+      MONGO_DB: productos_db
+      MONGO_USER: admin
+      MONGO_PASSWORD: admin123
+
+      # --- MYSQL ---
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DB: microservice_productos_bd
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_PORT: 3306
+      MYSQL_HOST: mysql
+
+      # --- RABBIT ---
+      RABBIT_USER: guest
+      RABBIT_PASS: guest
+      RABBIT_HOST: rabbitmq
+      RABBIT_PORT: 5672
+      PRODUCTORS_QUEUE: productors_registrations
+
+      # --- EUREKA ---
+      EUREKA_APP_NAME: products-microservice
+      EUREKA_INSTANCE_PORT: 8002
+      EUREKA_INSTANCE_HOST: micro_productos
+      EUREKA_HOST: eureka-server
+    restart: on-failure
+    depends_on:
+      productos_db_mongo:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - microservices-network
 
 volumes:
   mysql-data:
-
+  mongo-data:
 networks:
   microservices-network:
     driver: bridge

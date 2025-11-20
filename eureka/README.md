@@ -7,3 +7,10 @@ cd ..
 docker build -t eureka-server:latest eureka/
 3. Correr imagen de Docker
 docker run -p 8761:8761 --name eureka-server eureka-server:latest
+
+### Java temporal
+$env:JAVA_HOME = 'C:\Program Files\Java\jdk-21'
+$env:Path = "$env:JAVA_HOME\bin;$env:Path"
+java -version
+javac -version
+where.exe java

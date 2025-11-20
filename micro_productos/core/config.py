@@ -5,7 +5,7 @@ from pydantic import ConfigDict
 
 class Settings(BaseSettings):
     # Datos de la aplicación
-    BASE_URL: str = "http://localhost:8002"
+    BASE_URL: str = "http://localhost:8000"
     PROJECT_NAME: str = "AgroMercado-Local"
     VERSION: str = "1.0.0"
 

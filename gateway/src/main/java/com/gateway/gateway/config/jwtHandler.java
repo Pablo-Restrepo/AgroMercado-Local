@@ -39,7 +39,10 @@ public class jwtHandler {
             // fallback: usar bytes UTF-8 del secret (legacy/dev)
             System.out.println("SECRET no es base64, usando bytes UTF-8 como fallback (mejor usar base64 de 32 bytes)");
             keyBytes = SECRET.getBytes(StandardCharsets.UTF_8);
-        }
+        } catch (Exception e) {
+            System.out.println("Error al decodificar la secret key: " + e.getMessage());
+            throw new RuntimeException("Error al decodificar la secret key", e);
+         }
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }
