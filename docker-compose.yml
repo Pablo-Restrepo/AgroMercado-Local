@@ -149,7 +149,7 @@ services:
     networks:
       - microservices-network
     restart: on-failure
-  micro_productos:
+  micro-productos:
     build:
       context: ./micro_productos
       dockerfile: Dockerfile
@@ -183,7 +183,7 @@ services:
       # --- EUREKA ---
       EUREKA_APP_NAME: products-microservice
       EUREKA_INSTANCE_PORT: 8002
-      EUREKA_INSTANCE_HOST: micro_productos
+      EUREKA_INSTANCE_HOST: micro-productos
       EUREKA_HOST: eureka-server
     restart: on-failure
     depends_on:
