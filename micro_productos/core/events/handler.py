@@ -58,3 +58,31 @@ async def on_producto_eliminado(prod_id: int):
 
     except Exception as e:
         print(f"[Observer] Error al eliminar producto en MongoDB: {e}")
+
+async def on_producto_actualizado(event_data: dict):
+    """
+    Observador que se ejecuta cuando se elimina un producto en MySQL.
+    Elimina el producto correspondiente en MongoDB.
+    """
+    try:
+        # Buscar el producto en MongoDB por su primary key p_id
+        prod_id = event_data["p_id"]
+        producto: MongoProducto = MongoProducto.objects(p_id=prod_id).first()
+
+        if producto:
+            producto.p_nombre=event_data["p_nombre"],
+            producto.p_tipo=event_data["p_tipo"],
+            producto.p_unidad=event_data["p_unidad"],
+            producto.p_precio=event_data["p_precio"],
+            producto.p_stock = event_data["p_stock"],
+            imagen_bytes = base64.b64decode(event_data["imagen"])
+            imagen_binary = Binary(imagen_bytes)
+            producto.imagen = imagen_binary
+
+            producto.save()
+            print(f"[Observer] Producto {prod_id} fue actualizado correctamente en MongoDB.")
+        else:
+            print(f"[Observer] Producto {prod_id} no existe en MongoDB.")
+
+    except Exception as e:
+        print(f"[Observer] Error al eliminar producto en MongoDB: {e}")

@@ -56,7 +56,23 @@ class ProductoService:
         Actualiza los datos de un producto existente.
         Retorna el id del producto editado.
         """
-        return await self.command_repo.edit_producto(p_id, Producto=producto_datos)
+        producto_id =  await self.command_repo.edit_producto(p_id, Producto=producto_datos)
+
+        event_data = {
+            "p_id": producto_id,
+            "p_nombre": producto_datos.p_nombre,
+            "p_tipo": producto_datos.p_tipo,
+            "p_unidad": producto_datos.p_unidad,
+            "p_precio": producto_datos.p_precio,
+            "p_stock": producto_datos.p_stock,
+            "imagen":producto_datos.img
+        }
+         # Notificar evento
+        await event_manager.notify("producto_actualizado", event_data)
+
+        return producto_id
+
+
 
     async def eliminar_producto(self, p_id: int) -> int:
         """

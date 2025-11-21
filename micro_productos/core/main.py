@@ -9,7 +9,7 @@ from contextlib import asynccontextmanager
 from application.consumer_handlers import handle_create_productor_admin, handle_create_productor_asociados
 from core.dependencies import get_producto_service
 from core.events import event_manager
-from core.events.handler import on_producto_creado, on_producto_eliminado
+from core.events.handler import on_producto_actualizado, on_producto_creado, on_producto_eliminado
 from infrastructure.db.mongo_engine import init_mongo_db, close_mongo_db
 from infrastructure.db.sql_engine import close_sql_db, init_sql_db
 from infrastructure.db import sql_engine
@@ -28,6 +28,7 @@ async def lifespan(app: FastAPI):
     "iniciar el manejerador de eventos"
     event_manager.subscribe("producto_creado", on_producto_creado)
     event_manager.subscribe("producto_eliminado",on_producto_eliminado)
+    event_manager.subscribe("producto_actualizado",on_producto_actualizado)
     # crear instancia del servicio para inyectar en el handler
     producto_service = get_producto_service()
 
