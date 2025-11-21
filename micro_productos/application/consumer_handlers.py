@@ -6,7 +6,7 @@ from application.producto_service import ProductoService
 
 
 
-async def handle_create_productor_asociados(payload, message: IncomingMessage, productor_service: ProductoService):
+async def handle_create_productor(payload, message: IncomingMessage, productor_service: ProductoService):
     # Validar entrada con Pydantic
     try:
         #data = json.loads(payload)
@@ -24,6 +24,3 @@ async def handle_create_productor_asociados(payload, message: IncomingMessage, p
         # lanzar excepción para que el message.process haga nack (requeue=False) o manejar retento/DLQ aquí
         raise
 
-async def handle_create_productor_admin(payload, message: IncomingMessage, productor_service: ProductoService):
-    # Validar entrada con Pydantic
-    pass

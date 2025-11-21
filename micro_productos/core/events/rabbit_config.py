@@ -44,14 +44,14 @@ class RabbitConsumer:
      # ---------------------------
     # CONSUMO: COLA ASOCIADOS
     # ---------------------------
-    async def start_asociados(self, handler_asociados: HandlerType):
+    async def start_productores(self, handler_asociados: HandlerType):
         if not self._queue_registro_productores_asociados:
             raise RuntimeError("connect() must be called before start()")
 
         self._handler_asociados = handler_asociados
-        self._task_asociados = asyncio.create_task(self._consume_loop_asociados())
+        self._task_asociados = asyncio.create_task(self._consume_loop_productores())
 
-    async def _consume_loop_asociados(self):
+    async def _consume_loop_productores(self):
         try:
             async with self._queue_registro_productores_asociados.iterator() as queue_iter:
                 async for message in queue_iter:
@@ -66,32 +66,6 @@ class RabbitConsumer:
             raise
         except Exception:
             logger.exception("Consumer asociados error")
-
-    # ---------------------------
-    # CONSUMO: COLA ADMIN
-    # ---------------------------
-    async def start_admin(self, handler_admin: HandlerType):
-        if not self._queue_registro_productores_admin:
-            raise RuntimeError("connect() must be called before start_admin()")
-
-        self._handler_admin = handler_admin
-        self._task_admin = asyncio.create_task(self._consume_loop_admin())
-
-    async def _consume_loop_admin(self):
-        try:
-            async with self._queue_registro_productores_admin.iterator() as queue_iter:
-                async for message in queue_iter:
-                    try:
-                        await self._on_message(message, self._handler_admin)
-                    except asyncio.CancelledError:
-                        raise
-                    except Exception:
-                        logger.exception("Unhandled error processing message (admin)")
-        except asyncio.CancelledError:
-            logger.info("Consumer admin cancelled")
-            raise
-        except Exception:
-            logger.exception("Consumer admin error")
 
     # ---------------------------
     # MANEJO DE MENSAJE

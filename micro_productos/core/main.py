@@ -6,13 +6,12 @@ from api.producto_controller import ProductoController
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
-from application.consumer_handlers import handle_create_productor_admin, handle_create_productor_asociados
+from application.consumer_handlers import handle_create_productor
 from core.dependencies import get_producto_service
 from core.events import event_manager
 from core.events.handler import on_producto_actualizado, on_producto_creado, on_producto_eliminado
 from infrastructure.db.mongo_engine import init_mongo_db, close_mongo_db
 from infrastructure.db.sql_engine import close_sql_db, init_sql_db
-from infrastructure.db import sql_engine
 from .eureka_registry import eureka_client
 from .events.rabbit_config import RabbitConsumer
 from .config import settings
@@ -42,13 +41,10 @@ async def lifespan(app: FastAPI):
     await consumer.connect()
 
     # wrapper handler para inyectar servicio
-    async def _handler_productor_asociados(payload: dict, message):
-        await handle_create_productor_asociados(payload, message, producto_service)
+    async def _handler_create_productor(payload: dict, message):
+        await handle_create_productor(payload, message, producto_service)
 
-    async def _handler_productor_admin(payload: dict, message):
-        await handle_create_productor_admin(payload, message, producto_service)
-
-    await consumer.start_asociados(_handler_productor_asociados)
+    await consumer.start_productores(_handler_create_productor)
     app.state.rabbit_consumer = consumer
     #registrar en Eureka
     try:
