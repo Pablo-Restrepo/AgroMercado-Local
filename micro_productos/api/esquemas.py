@@ -1,5 +1,12 @@
+from enum import Enum
 from pydantic import BaseModel, field_validator
 
+
+class RolEnum(str, Enum):
+    PRODUCTOR_ADMIN = "productor-admin"
+    PRODUCTOR_AFILIADO = "productor-afiliado"
+    CLIENTE = "cliente"
+    
 class ProductoRegistro(BaseModel):
     p_nombre: str
     p_tipo: str
@@ -83,4 +90,15 @@ class ProductorRegistroConsulta(BaseModel):
         if v <= 0:
             raise ValueError("prod_cod_gremio debe ser mayor a 0")
         return v
+    
+class ProductoCompra(BaseModel):
+    p_id: int
+    cant: int 
+
+    @field_validator("cant")
+    def validar_precio(cls, v):
+        if v <= 0:
+            raise ValueError("cant debe ser mayor a 0")
+        return v
+
 

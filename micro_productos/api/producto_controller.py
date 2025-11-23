@@ -1,8 +1,10 @@
 
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
-from .esquemas import ProductoRegistro, ProductoConsulta, ProductoActualizacion
+
+from core.auth_middleware import get_current_user
+from .esquemas import ProductoRegistro, ProductoConsulta, ProductoActualizacion, RolEnum
 from application.producto_service import ProductoService
 
 
@@ -23,26 +25,44 @@ class ProductoController:
     # ==========================================================
     # MÉTODOS DE COMANDO
     # ==========================================================
-    async def registrar_producto(self, producto: ProductoRegistro) -> int:
+    async def registrar_producto(self, producto: ProductoRegistro,current_user: dict = Depends(get_current_user)) -> int:
         """
         Registra un nuevo producto (recibe un JSON).
         """
-        producto_id = await self.service.registrar_producto(producto)
-        return producto_id
+        if current_user.get('rol') == RolEnum.PRODUCTOR_ADMIN or current_user.get('rol') == RolEnum.PRODUCTOR_AFILIADO:
+            producto_id = await self.service.registrar_producto(producto)
+            return producto_id
+        
+        raise HTTPException(
+                status_code=403,
+                detail="No tiene permisos para registrar productos. Debe ser productor"
+            )
 
-    async def editar_producto(self, p_id: int, producto: ProductoActualizacion) -> int:
+    async def editar_producto(self, p_id: int, producto: ProductoActualizacion,current_user: dict = Depends(get_current_user)) -> int:
         """
         Edita un producto existente (recibe un JSON).
         """
-        producto_id = await self.service.editar_producto(p_id, producto)
-        return producto_id
+        if current_user.get('rol') == RolEnum.PRODUCTOR_ADMIN or current_user.get('rol') == RolEnum.PRODUCTOR_AFILIADO:
+            
+            producto_id = await self.service.editar_producto(p_id, producto)
+            return producto_id
+        raise HTTPException(
+                status_code=403,
+                detail="No tiene permisos para editar productos. Debe ser productor"
+            )
 
-    async def eliminar_producto(self, p_id: int) -> int:
+    async def eliminar_producto(self, p_id: int,current_user: dict = Depends(get_current_user)) -> int:
         """
         Elimina un producto por ID.
         """
-        producto_id = await self.service.eliminar_producto(p_id)
-        return producto_id
+        if current_user.get('rol') == RolEnum.PRODUCTOR_ADMIN or current_user.get('rol') == RolEnum.PRODUCTOR_AFILIADO:
+            
+            producto_id = await self.service.eliminar_producto(p_id)
+            return producto_id
+        raise HTTPException(
+                status_code=403,
+                detail="No tiene permisos para eliminar productos. Debe ser productor"
+            )
 
     # ==========================================================
     # MÉTODOS DE CONSULTA

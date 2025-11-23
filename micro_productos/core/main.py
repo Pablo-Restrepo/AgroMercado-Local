@@ -6,15 +6,15 @@ from api.producto_controller import ProductoController
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
-from application.consumer_handlers import handle_create_productor
+from application.consumer_handlers import handle_create_productor, handle_created_compra
 from core.dependencies import get_producto_service
 from core.events import event_manager
-from core.events.handler import on_producto_actualizado, on_producto_creado, on_producto_eliminado
+from core.events.handler import on_producto_actualizado, on_producto_creado, on_producto_eliminado, on_producto_stock_actualizado
 from infrastructure.db.mongo_engine import init_mongo_db, close_mongo_db
 from infrastructure.db.sql_engine import close_sql_db, init_sql_db
 from .eureka_registry import eureka_client
-from .events.rabbit_config import RabbitConsumer
-from .config import settings
+from .events import consumer, publisher
+
 
 
 @asynccontextmanager
@@ -28,23 +28,23 @@ async def lifespan(app: FastAPI):
     event_manager.subscribe("producto_creado", on_producto_creado)
     event_manager.subscribe("producto_eliminado",on_producto_eliminado)
     event_manager.subscribe("producto_actualizado",on_producto_actualizado)
+    event_manager.subscribe("producto_stock_actualizado",on_producto_stock_actualizado)
     # crear instancia del servicio para inyectar en el handler
     producto_service = get_producto_service()
 
     # configurar consumer
-    rabbit_url = settings.RABBIT_URL
-    queue_registro_productores_asociados = settings.PRODUCTORES_ASOCIADOS_QUEUE
-    queue_registro_productores_admin = settings.PRODUCTORES_ADMIN_QUEUE
-    consumer = RabbitConsumer(rabbit_url, 
-                            queue_registro_productores_asociados_nombre = queue_registro_productores_asociados,
-                            queue_registro_productores_admin_nombre=queue_registro_productores_admin, prefetch=5)
+    
     await consumer.connect()
-
+    await publisher.connect()
     # wrapper handler para inyectar servicio
     async def _handler_create_productor(payload: dict, message):
         await handle_create_productor(payload, message, producto_service)
 
+    async def _handler_created_compra(payload: dict, message):
+        await handle_created_compra(payload, message, producto_service)
+
     await consumer.start_productores(_handler_create_productor)
+    await consumer.start_actualizacion_stock(_handler_created_compra)
     app.state.rabbit_consumer = consumer
     #registrar en Eureka
     try:
@@ -58,6 +58,8 @@ async def lifespan(app: FastAPI):
     finally:
         # parar consumer
         await consumer.stop()
+        #parar el publicador
+        await publisher.close()
         # parar eureka_client
         await eureka_client.stop()
         # cerrar conexión DB
