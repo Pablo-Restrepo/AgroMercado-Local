@@ -54,12 +54,11 @@ class ProductoService:
 
         # construir los datos de producto para publicar en la cola
         producto_cola = {
-            "p_id": producto_id,
-            "p_nombre": producto_datos.p_nombre,
-            "p_tipo": producto_datos.p_tipo,
-            "p_unidad": producto_datos.p_unidad,
-            "p_precio": producto_datos.p_precio,
-            "p_stock": producto_datos.p_stock
+            "id": producto_id,
+            "nombre": producto_datos.p_nombre,
+            "unidad": producto_datos.p_unidad,
+            "precio": producto_datos.p_precio,
+            "stock": producto_datos.p_stock
         }
         await publisher.publish(message=producto_cola,routing_key=queue_creacion_productos)
         return producto_id
@@ -71,29 +70,42 @@ class ProductoService:
         Actualiza los datos de un producto existente.
         Retorna el id del producto editado.
         """
+        producto_original = self.query_repo.get_producto_por_id(p_id=p_id)
         producto_id =  await self.command_repo.edit_producto(p_id, producto=producto_datos)
-      
-        event_data = {
-            "p_id": producto_id,
-            "p_nombre": producto_datos.p_nombre,
-            "p_tipo": producto_datos.p_tipo,
-            "p_unidad": producto_datos.p_unidad,
-            "p_precio": producto_datos.p_precio,
-            "p_stock": producto_datos.p_stock,
-            "imagen":producto_datos.img
-        }
-         # Notificar evento
-        await event_manager.notify("producto_actualizado", event_data)
-        # publicar el producto en la cola
-        producto_cola = {
-            "p_id": producto_id,
-            "p_nombre": producto_datos.p_nombre,
-            "p_tipo": producto_datos.p_tipo,
-            "p_unidad": producto_datos.p_unidad,
-            "p_precio": producto_datos.p_precio,
-            "p_stock": producto_datos.p_stock
-        }
-        await publisher.publish(message=producto_cola,routing_key=queue_actualizacion_productos)
+        producto_modificado = self.query_repo.get_producto_por_id(p_id=producto_id)
+
+        if producto_original != producto_modificado:
+            #construir la informacion para el evento de actualizacion en mongo db
+            event_data = {
+                "p_id": producto_id,
+                "p_nombre": producto_datos.p_nombre,
+                "p_tipo": producto_datos.p_tipo,
+                "p_unidad": producto_datos.p_unidad,
+                "p_precio": producto_datos.p_precio,
+                "p_stock": producto_datos.p_stock,
+                "imagen":producto_datos.img
+            }
+            # Notificar evento
+            await event_manager.notify("producto_actualizado", event_data)
+            # publicar el producto en la cola
+            # solo se publica el evento a la cola si cambia alguno de estos campos
+            # nombre, unidad,precio o stock 
+            campos_a_verificar = ["p_nombre", "p_unidad", "p_precio", "p_stock"]
+
+            cambio = any(
+                getattr(producto_original, campo) != getattr(producto_modificado, campo)
+                for campo in campos_a_verificar
+            )
+
+            if cambio:
+                producto_cola = {
+                    "id": producto_id,
+                    "nombre": producto_datos.p_nombre,
+                    "unidad": producto_datos.p_unidad,
+                    "precio": producto_datos.p_precio,
+                    "stock": producto_datos.p_stock
+                }
+                await publisher.publish(message=producto_cola,routing_key=queue_actualizacion_productos)
         return producto_id
 
     async def actualizar_stock_productos(self, productos_compra:list[ProductoCompra]) -> int:
