@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from api.esquemas import ProductoRegistro, ProductoActualizacion, ProductorRegistroConsulta
+from api.esquemas import ProductoCompra, ProductoRegistro, ProductoActualizacion, ProductorRegistroConsulta
 
 from abc import ABC, abstractmethod
 
@@ -11,6 +11,10 @@ class IProductoCommandRepository(ABC):
 
     @abstractmethod
     async def edit_producto(self, p_id: int, producto: ProductoActualizacion) -> int:
+        pass
+
+    @abstractmethod
+    async def edit_producto_stock(self, p_id: int, cant:int) -> int:
         pass
 
     @abstractmethod

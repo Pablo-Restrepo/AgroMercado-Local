@@ -18,6 +18,7 @@ class MongoQueryRepository(IProductoQueryRepository):
                     p_tipo=p.p_tipo,
                     p_unidad=p.p_unidad,
                     gre_nombre=p.productor.prod_nombre_gremio,
+                    p_stock = p.p_stock,
                     img= base64.b64encode(p.imagen).decode("utf-8"),
                     p_precio=p.p_precio
                 )
@@ -35,6 +36,7 @@ class MongoQueryRepository(IProductoQueryRepository):
                     p_nombre=p.p_nombre,
                     p_tipo=p.p_tipo,
                     p_unidad=p.p_unidad,
+                    p_stock = p.p_stock,
                     gre_nombre=p.productor.prod_nombre_gremio,
                     img= base64.b64encode(p.imagen).decode("utf-8"),
                     p_precio=p.p_precio
@@ -54,6 +56,7 @@ class MongoQueryRepository(IProductoQueryRepository):
                     p_nombre=p.p_nombre,
                     p_tipo=p.p_tipo,
                     p_unidad=p.p_unidad,
+                    p_stock = p.p_stock,
                     gre_nombre=p.productor.prod_nombre_gremio,
                     img= base64.b64encode(p.imagen).decode("utf-8"),
                     p_precio=p.p_precio
@@ -70,6 +73,7 @@ class MongoQueryRepository(IProductoQueryRepository):
                     p_nombre=p.p_nombre,
                     p_tipo=p.p_tipo,
                     p_unidad=p.p_unidad,
+                    p_stock = p.p_stock,
                     gre_nombre=p.productor.prod_nombre_gremio,
                     img= base64.b64encode(p.imagen).decode("utf-8"),
                     p_precio=p.p_precio

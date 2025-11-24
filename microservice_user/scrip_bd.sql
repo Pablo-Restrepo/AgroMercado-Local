@@ -26,5 +26,6 @@ CREATE TABLE usuario (
     u_fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     u_es_activo BOOLEAN DEFAULT TRUE,
     p_id INT,
+    u_rol VARCHAR(50) DEFAULT 'cliente',
     FOREIGN KEY (p_id) REFERENCES persona(p_id)
 );
