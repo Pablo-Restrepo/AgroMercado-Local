@@ -149,7 +149,7 @@ services:
     networks:
       - microservices-network
     restart: on-failure
-  micro_productos:
+  micro-productos:
     build:
       context: ./micro_productos
       dockerfile: Dockerfile
@@ -177,13 +177,19 @@ services:
       RABBIT_PASS: guest
       RABBIT_HOST: rabbitmq
       RABBIT_PORT: 5672
-      PRODUCTORS_QUEUE: productors_registrations
+      PRODUCTORES_QUEUE: productors_registrations
+      PRODUCTOS_ACTUALIZADOS_QUEUE: updated_products
+      PRODUCTOS_CREADOS_QUEUE: created_products
+      PRODUCTOS_STOCK_ACTUALIZADO_QUEUE: updated_product_stock
 
       # --- EUREKA ---
       EUREKA_APP_NAME: products-microservice
       EUREKA_INSTANCE_PORT: 8002
-      EUREKA_INSTANCE_HOST: micro_productos
+      EUREKA_INSTANCE_HOST: micro-productos
       EUREKA_HOST: eureka-server
+
+      # --- JWT ---
+      SECRET_KEY: ${SECRET_KEY}
     restart: on-failure
     depends_on:
       productos_db_mongo:

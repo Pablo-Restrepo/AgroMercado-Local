@@ -9,6 +9,10 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "AgroMercado-Local"
     VERSION: str = "1.0.0"
 
+    #JWT
+    SECRET_KEY: str
+    ALGORITHM:str = "HS256"
+
     # Configuración de MySQL
     MYSQL_USER: str
     MYSQL_PASSWORD: str
@@ -28,8 +32,11 @@ class Settings(BaseSettings):
     RABBIT_PASS: str
     RABBIT_HOST: str
     RABBIT_PORT: int
-    PRODUCTORS_QUEUE: str
-
+    PRODUCTORES_QUEUE: str
+    PRODUCTOS_CREADOS_QUEUE: str
+    PRODUCTOS_ACTUALIZADOS_QUEUE: str
+    PRODUCTOS_STOCK_ACTUALIZADO_QUEUE: str 
+    
     # eureka
     EUREKA_APP_NAME: str
     EUREKA_INSTANCE_PORT: int

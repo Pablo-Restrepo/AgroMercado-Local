@@ -14,5 +14,6 @@ class Producto(Document):
     p_tipo = StringField(required=True)
     p_unidad = StringField(required=True)
     p_precio = FloatField(required=True)
+    p_stock = IntField(required=True)
     productor = EmbeddedDocumentField(Productor)
     imagen = BinaryField()

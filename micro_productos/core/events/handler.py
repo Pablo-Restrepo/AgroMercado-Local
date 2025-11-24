@@ -31,6 +31,7 @@ async def on_producto_creado(event_data: dict):
             p_tipo=event_data["p_tipo"],
             p_unidad=event_data["p_unidad"],
             p_precio=event_data["p_precio"],
+            p_stock = event_data["p_stock"],
             productor=mongo_productor,
             imagen = imagen_binary
         ).save()
@@ -38,3 +39,76 @@ async def on_producto_creado(event_data: dict):
         print(f"[Observer] Producto {event_data['p_nombre']} creado en MongoDB ✅")
     except Exception as e:
         print(f"[Observer] Error al crear producto en MongoDB: {e}")
+
+
+async def on_producto_eliminado(prod_id: int):
+    """
+    Observador que se ejecuta cuando se elimina un producto en MySQL.
+    Elimina el producto correspondiente en MongoDB.
+    """
+    try:
+        # Buscar el producto en MongoDB por su primary key p_id
+        producto = MongoProducto.objects(p_id=prod_id).first()
+
+        if producto:
+            producto.delete()
+            print(f"[Observer] Producto {prod_id} eliminado correctamente en MongoDB.")
+        else:
+            print(f"[Observer] Producto {prod_id} no existe en MongoDB (nada que eliminar).")
+
+    except Exception as e:
+        print(f"[Observer] Error al eliminar producto en MongoDB: {e}")
+
+async def on_producto_actualizado(event_data: dict):
+    """
+    Observador que se ejecuta cuando se actualiza un producto en MySQL.
+    actualiza el producto correspondiente en MongoDB.
+    """
+    try:
+        # Buscar el producto en MongoDB por su primary key p_id
+        prod_id = event_data["p_id"]
+        producto: MongoProducto = MongoProducto.objects(p_id=prod_id).first()
+        if producto:
+            producto.p_nombre=event_data["p_nombre"]
+            producto.p_tipo=event_data["p_tipo"]
+            producto.p_unidad=event_data["p_unidad"]
+            producto.p_precio=event_data["p_precio"]
+            producto.p_stock = event_data["p_stock"]
+            imagen_bytes = base64.b64decode(event_data["imagen"])
+            imagen_binary = Binary(imagen_bytes)
+            producto.imagen = imagen_binary
+
+            producto.save()
+            print(f"[Observer] Producto {prod_id} fue actualizado correctamente en MongoDB.")
+        else:
+            print(f"[Observer] Producto {prod_id} no existe en MongoDB.")
+
+    except Exception as e:
+        print(f"[Observer] Error al actualizar producto en MongoDB: {e}")
+
+
+async def on_producto_stock_actualizado(event_data: dict):
+    """
+    Observador que se ejecuta cuando se actualiza un producto en MySQL.
+    actualiza el producto correspondiente en MongoDB.
+    """
+    try:
+        # Buscar el producto en MongoDB por su primary key p_id
+        for p in event_data:
+            p_id = p["p_id"]
+            producto: MongoProducto = MongoProducto.objects(p_id=p_id).first()
+            if producto:
+                stock_actual = producto.p_stock 
+                if stock_actual < p["cant"]:
+                    raise ValueError("La compra tiene un valor superior al stock actual")
+
+                nuevo_stock = stock_actual - p["cant"]
+                producto.p_stock =  nuevo_stock
+
+                producto.save()
+                print(f"[Observer] el stock del Producto {p_id} fue actualizado correctamente en MongoDB.")
+            else:
+                print(f"[Observer] Producto {p_id} no existe en MongoDB.")
+
+    except Exception as e:
+        print(f"[Observer] Error al eliminar producto en MongoDB: {e}")

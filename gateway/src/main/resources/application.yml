@@ -37,7 +37,7 @@ spring:
         - id: products-microservice
           uri: lb://products-microservice
           predicates:
-            - Path=/api/productos
+            - Path=/api/productos/**
           filters:
             - name: jwtAuthenticationFilter
               args:

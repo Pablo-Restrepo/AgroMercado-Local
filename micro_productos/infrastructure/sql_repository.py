@@ -1,5 +1,5 @@
 
-from api.esquemas import ProductoRegistro, ProductoActualizacion, ProductorRegistroConsulta
+from api.esquemas import ProductoCompra, ProductoRegistro, ProductoActualizacion, ProductorRegistroConsulta
 from infrastructure.int_command_repository import IProductoCommandRepository
 from infrastructure.db.sql_engine import async_session
 from infrastructure.sql_models import ProductoModel, ProductorModel
@@ -14,7 +14,7 @@ class SQLCommandRepository(IProductoCommandRepository):
         async with async_session() as session:
             imagen = base64.b64decode(producto.img)
             producto_model = ProductoModel(p_nombre=producto.p_nombre,p_precio = producto.p_precio, prod_id = producto.prod_id,
-                                           p_tipo=producto.p_tipo, p_unidad=producto.p_unidad, imagen=imagen)
+                                           p_tipo=producto.p_tipo, p_unidad=producto.p_unidad, p_stock=producto.p_stock, imagen=imagen)
             session.add(producto_model)
             await session.commit()
             await session.refresh(producto_model)            
@@ -30,6 +30,7 @@ class SQLCommandRepository(IProductoCommandRepository):
             await session.refresh(productor_model)            
             logger.info(f"Productor agregado: {productor.prod_nombre} {productor.prod_apellido} (id={productor_model.prod_id})")
             return productor_model.prod_id
+        
     async def edit_producto(self,p_id: int, producto: ProductoActualizacion) -> int:
         async with async_session() as session:
             # Buscar el producto existente
@@ -43,7 +44,10 @@ class SQLCommandRepository(IProductoCommandRepository):
             db_producto.p_precio = producto.p_precio
             db_producto.p_tipo = producto.p_tipo
             db_producto.p_unidad = producto.p_unidad
-            db_producto.imagen = producto.img
+            imagen = base64.b64decode(producto.img)
+            db_producto.imagen = imagen
+            db_producto.p_stock = producto.p_stock
+
 
             # Confirmar los cambios
             await session.commit()
@@ -51,7 +55,28 @@ class SQLCommandRepository(IProductoCommandRepository):
 
             logger.info(f"Producto actualizado: {db_producto.p_nombre} (id={db_producto.p_id})")
             return db_producto.p_id
+        
+    async def edit_producto_stock(self, p_id: int, cant:int) -> int:
+        async with async_session() as session:
+            # Buscar el producto existente
+            db_producto = await session.get(ProductoModel, p_id)
+            if not db_producto:
+                logger.warning(f"Producto con id={p_id} no encontrado")
+                return 0  # o puedes lanzar una excepción
+            stock_actual = db_producto.p_stock
+            if stock_actual < cant:
+                logger.error(f"Error, la cantidad comprada del producto {p_id} ({cant}), supera al stock actual: {stock_actual}")
+                raise ValueError("la cantidad comprada no puede ser superior al stock actual")
+            nuevo_stock = stock_actual - cant
+            db_producto.p_stock = nuevo_stock
 
+            # Confirmar los cambios
+            await session.commit()
+            await session.refresh(db_producto)
+
+            logger.info(f"el stock del producto actualizado: {db_producto.p_nombre} (id={db_producto.p_id})")
+            return db_producto.p_id
+        
     async def get_productor(self, prod_id: int) -> ProductorRegistroConsulta:
         """Obtiene un productor por su ID desde la base de datos SQL"""
         async with async_session() as session:
@@ -78,18 +103,14 @@ class SQLCommandRepository(IProductoCommandRepository):
         """
         async with async_session() as session:
             try:
-                # Ejecutar la sentencia DELETE
-                stmt = delete(ProductoModel).where(ProductoModel.p_id == p_id)
-                result = await session.execute(stmt)
 
+                db_producto = await session.get(ProductoModel, p_id)
+                if not db_producto:
+                    logger.warning(f"Producto con id={p_id} no encontrado")
+                    return 0  # o puedes lanzar una excepción
                 # Confirmar la transacción
+                db_producto.p_estado = False
                 await session.commit()
-
-                # result.rowcount indica cuántas filas fueron afectadas
-                if result.rowcount == 0:
-                    logger.warning(f"Producto con id={p_id} no encontrado.")
-                    return 0
-
                 logger.info(f"Producto con id={p_id} eliminado correctamente.")
                 return 1
 
