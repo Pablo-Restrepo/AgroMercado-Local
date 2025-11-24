@@ -141,8 +141,13 @@ class CompraRepository(ICompraRepository):
                     prod_model.p_stock = prod_model.p_stock - pu.cantidad
                     session.add(prod_model)
 
-                # 2) Crear y persistir compra
-                compra_model = compra_entity_to_model(compra)
+                # 2) Crear compra SIN productos (evitar duplicados)
+                compra_model = CompraModel(
+                    u_id=compra.id_usuario,
+                    c_fecha=compra.fecha,
+                    c_total=compra.total,
+                    c_estado=compra.estado.nombre
+                )
                 session.add(compra_model)
                 await session.flush()  # asegura que compra_model.c_id exista
 
@@ -206,14 +211,13 @@ class CompraRepository(ICompraRepository):
                 logger.warning(f"Compra con id {compra.id} no encontrada para actualizar.")
                 return None
             # Actualizar campos
-            compra_model = compra_entity_to_model(compra)
+            compra_model.c_estado = compra.estado.nombre
             await session.commit()
             logger.info(f"Compra con id {compra.id} actualizada.")
             return compra
 class EnvioRepository(IEnvioRepository):
     async def save_envio(self, envio:Envio):
-        async with async_session() as session:
-            from infraestructure.db.mapper import envio_entity_to_model
+        async with async_session() as session:            
             envio_model = envio_entity_to_model(envio)
             session.add(envio_model)
             await session.commit()
@@ -225,14 +229,47 @@ class EnvioRepository(IEnvioRepository):
         async with async_session() as session:
             result = await session.execute(
                 select(EnvioModel).where(EnvioModel.e_id == id).options(
-                    selectinload(EnvioModel.e_compra)
+                    selectinload(EnvioModel.e_compra).selectinload(CompraModel.c_productos)
                 )
             )
             envio_model = result.scalar_one_or_none()
-            if envio_model:
-                from infraestructure.db.mapper import envio_model_to_entity
+            if envio_model:                
                 envio = envio_model_to_entity(envio_model)
                 logger.info(f"Envío con id {id} obtenido.")
                 return envio
             logger.warning(f"Envío con id {id} no encontrado.")
             return None
+    async def update_envio(self, envio:Envio):
+        async with async_session() as session:
+            envio_model = await session.get(EnvioModel, envio.id)
+            if not envio_model:
+                logger.warning(f"Envío con id {envio.id} no encontrado para actualizar.")
+                return None
+            # Actualizar campos            
+            envio_model.e_estado = envio.estado.nombre
+            envio_model.e_fecha_envio = envio.fecha_envio
+            await session.commit()
+            logger.info(f"Envío con id {envio.id} actualizado.")
+            return envio
+    async def get_envios_by_id_gremio(self, id_gremio:int) -> List[Envio]:
+        async with async_session() as session:
+            result = await session.execute(
+                select(EnvioModel).where(EnvioModel.e_id_gremio == id_gremio).options(
+                    selectinload(EnvioModel.e_compra).selectinload(CompraModel.c_productos)
+                )
+            )
+            envios_models = result.scalars().all()            
+            envios = [envio_model_to_entity(e) for e in envios_models]
+            logger.info(f"{len(envios)} envíos obtenidos para el gremio {id_gremio}.")
+            return envios
+    async def get_envios_by_usuario(self, id_usuario:int) -> List[Envio]:
+        async with async_session() as session:
+            result = await session.execute(
+                select(EnvioModel).join(CompraModel).where(CompraModel.u_id == id_usuario).options(
+                    selectinload(EnvioModel.e_compra).selectinload(CompraModel.c_productos)
+                )
+            )
+            envios_models = result.scalars().all()            
+            envios = [envio_model_to_entity(e) for e in envios_models]
+            logger.info(f"{len(envios)} envíos obtenidos para el usuario {id_usuario}.")
+            return envios

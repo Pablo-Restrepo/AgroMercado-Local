@@ -29,22 +29,22 @@ class Productor(Persona):
         self.id_gremio = None        
     def es_activo(self) -> bool:
         return self.es_activo
-    def crear_gremio(self, nombre_gremio):
+    def crear_gremio(self, nombre_gremio:str,descripcion:str,ubicacion:str):
         if self.rol != RolEnum.PRODUCTOR_ADMIN:
             raise ValueError("Solo un productor con rol ADMIN puede crear un gremio")
         if self.id_gremio is not None:
             raise ValueError("El productor ya pertenece a un gremio")
-        gremio = Gremio(None,nombre=nombre_gremio, productores=[self])        
+        gremio = Gremio(None,nombre=nombre_gremio,descripcion=descripcion,ubicacion=ubicacion, productores=[self])        
         return gremio
 
-class Gremio:
-    #TO DO: Definir si es necesario que el gremio contenga una lista de productores o 
-    # si es mejor tener solo sus ids
-    def __init__(self, id:int | None, nombre, productores:List[Productor] = None):
-        if not nombre:
+class Gremio:        
+    def __init__(self, id:int | None, nombre:str, descripcion:str, ubicacion:str, productores:List[Productor] = None):
+        if not nombre or descripcion or ubicacion:
             raise ValueError("Todos los campos son obligatorios")
         self.id = id
         self.nombre = nombre
+        self.descripcion = descripcion
+        self.ubicacion = ubicacion
         self.productores = productores if productores is not None else []
         self.es_activo = True
 

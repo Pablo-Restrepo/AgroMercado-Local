@@ -68,6 +68,7 @@ def envio_entity_to_model(envio_entity:Envio)-> EnvioModel:
     from infraestructure.db.modelsSQL import EnvioModel
     envio_model = EnvioModel(
         e_id=envio_entity.id,
+        e_id_gremio=envio_entity.id_gremio,
         e_destino=envio_entity.destino,        
         e_valor=envio_entity.valor,
         e_estado=envio_entity.estado.nombre,
@@ -92,7 +93,8 @@ def envio_model_to_entity(envio_model:EnvioModel) -> Envio:
     estado_entity = estado_map.get(envio_model.e_estado, EstadoPendiente())
     envio_entity = Envio(
         id=envio_model.e_id,
-        compra=envio_model.e_compra,
+        id_gremio=envio_model.e_id_gremio,
+        compra=compra_model_to_entity(envio_model.e_compra),
         destino=envio_model.e_destino,
         valor=envio_model.e_valor,        
         fecha_envio=envio_model.e_fecha_envio,

@@ -1,3 +1,10 @@
+from enum import Enum
+
+
+class RolEnum(str, Enum):
+    PRODUCTOR_ADMIN = "productor-admin"
+    PRODUCTOR_AFILIADO = "productor-afiliado"
+    CLIENTE = "cliente"
 class Usuario:
     def __init__(self, id: int, nombre: str, email: str, es_activo:bool = True):
         self.id = id

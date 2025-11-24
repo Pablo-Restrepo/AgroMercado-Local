@@ -16,3 +16,15 @@ class CompraResponseDTO(BaseModel):
     fecha: str = Field(..., json_schema_extra={"example": "2024-04-27T12:34:56", "description": "Fecha y hora de la compra"})
     total: float = Field(..., gt=0, json_schema_extra={"example": 29.99, "description": "Total de la compra"})
     estado: str = Field(..., json_schema_extra={"example": "completada", "description": "Estado de la compra"})
+class UsuarioDTO(BaseModel):
+    id: int = Field(...,gt=0, json_schema_extra={"example": 1, "description": "ID del usuario"})
+    nombre: str = Field(..., json_schema_extra={"example": "Juan Pérez", "description": "Nombre del usuario"})
+    email: str = Field(..., json_schema_extra={"example": "juan.perez@example.com", "description": "Correo electrónico del usuario"})
+    es_activo: bool = Field(..., json_schema_extra={"example": True, "description": "Indica si el usuario está activo"})
+class ProductoDTO(BaseModel):
+    id: int = Field(...,gt=0, json_schema_extra={"example": 1, "description": "ID del producto"})
+    nombre: str = Field(..., json_schema_extra={"example": "Manzanas", "description": "Nombre del producto"})
+    id_gremio: int = Field(...,gt=0, json_schema_extra={"example": 2, "description": "ID del gremio al que pertenece el producto"})
+    precio: float = Field(..., gt=0, json_schema_extra={"example": 3.5, "description": "Precio del producto"})
+    unidad: str = Field(..., json_schema_extra={"example": "kg", "description": "Unidad de medida del producto"})
+    stock: int = Field(..., ge=0, json_schema_extra={"example": 100, "description": "Cantidad disponible en stock del producto"})

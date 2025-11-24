@@ -15,8 +15,8 @@ class Compra:
         self.estado = estado
     def calcular_total(self)->float:
         if self.productos is None or len(self.productos) == 0:
-            return 0
-        self.total = sum([producto.calcular_subtotal() for producto in self.productos])
+            return 0        
+        self.total = sum([producto.subtotal for producto in self.productos])
         return self.total    
     def agregar_producto(self, producto: ProductoUnitario):
         if self.estado == EstadoConfirmada() or self.estado == EstadoCancelada():

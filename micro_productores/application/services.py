@@ -91,7 +91,7 @@ class GremioService:
             admin = await self.productor_repo.obtener_productor_por_id(id_admin)
             if not admin:
                 raise ValueError("Productor administrador no encontrado")            
-            gremio = admin.crear_gremio(gremio.nombre)            
+            gremio = admin.crear_gremio(gremio.nombre,gremio.descripcion,gremio.ubicacion)            
             id_gremio = await self.gremio_repo.agregar_gremio(gremio)
             gremio.id = id_gremio
             admin.id_gremio = id_gremio            
@@ -103,7 +103,7 @@ class GremioService:
                     "prod_cod_gremio": admin.id_gremio,
                     "prod_nombre_gremio": gremio.nombre if admin.id_gremio else None
                 }
-            #Enviar registro de productor al micro de productos
+            #Enviar registro de productor al micro de productos ya que aqui es donde se asigna el id del gremio al productor
             publish_productor_registration(productor_data)
         except Exception as e:
             raise ValueError(f"Error creando el gremio: {e}")                                

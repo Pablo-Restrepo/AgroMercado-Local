@@ -10,20 +10,20 @@ from domain.entities.usuario import Usuario
 #Interfaz para el repositorio de productos
 class IProductoRepository(ABC):
     @abstractmethod
-    async def save_producto(self, producto:Producto):
+    def save_producto(self, producto:Producto):
         pass
     @abstractmethod
-    async def get_productos(self)-> List[Producto]:
+    def get_productos(self)-> List[Producto]:
         pass
     @abstractmethod
-    async def get_producto_by_id(self, id:int)-> Producto:
+    def get_producto_by_id(self, id:int)-> Producto:
         pass
 class IProductoUnitarioRepository(ABC):
     @abstractmethod
-    async def save_producto_unitario(self, producto_unitario:ProductoUnitario):
+    def save_producto_unitario(self, producto_unitario:ProductoUnitario):
         pass    
     @abstractmethod
-    async def get_productos_unitarios_by_compra(self, id_compra:int) -> List[ProductoUnitario]:
+    def get_productos_unitarios_by_compra(self, id_compra:int) -> List[ProductoUnitario]:
         pass
 class ICompraRepository(ABC):
     @abstractmethod
@@ -56,8 +56,14 @@ class IEnvioRepository(ABC):
     def save_envio(self, envio:Envio):
         pass    
     @abstractmethod
-    def get_envio_by_id(self, id:int):
+    def get_envio_by_id(self, id:int)-> Envio:
         pass    
     @abstractmethod
     def update_envio(self, envio:Envio):
-        pass            
+        pass
+    @abstractmethod
+    def get_envios_by_id_gremio(self, id_gremio:int)-> List[Envio]:
+        pass    
+    @abstractmethod
+    def get_envios_by_usuario(self, id_usuario:int)-> List[Envio]:
+        pass        

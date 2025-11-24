@@ -1,5 +1,5 @@
 import json
-from micro_compras.infraestructure.logging import logger
+from infra.logging import logger
 from aio_pika import IncomingMessage
 from application.dtos import CrearProductorDTO
 from application.services import ProductorService

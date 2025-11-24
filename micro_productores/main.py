@@ -3,7 +3,7 @@ from fastapi.responses import RedirectResponse
 from api.v1.gremio_controller import router as gremio_controller 
 from api.v1.productor_controller import router as productor_controller 
 from config import settings
-from micro_compras.infraestructure.logging import logger
+from infra.logging import logger
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 

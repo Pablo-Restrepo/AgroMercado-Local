@@ -28,7 +28,7 @@ class ProductoUnitarioModel(SQLModel, table=True):
     p_id: Optional[int] = Field(foreign_key="producto.p_id")
     c_id: Optional[int] = Field(default=None, foreign_key="compra.c_id")  # FK hacia compra
     pu_cantidad: int = Field(default=None)
-    pu_precio_unitario: int = Field(default=None)
+    pu_precio_unitario: float = Field(default=None)
     pu_unidad: str = Field(max_length=50)
     pu_subtotal: float = Field(default=None)
     # Relacion con producto (unidireccional: no back_populates)
@@ -39,10 +39,11 @@ class ProductoUnitarioModel(SQLModel, table=True):
 class EnvioModel(SQLModel, table=True):
     __tablename__="envio"
     e_id: Optional[int] = Field(default=None, primary_key=True)
+    e_id_gremio: int = Field(default=None)
     e_destino: str = Field(max_length=200)
     e_valor: float = Field(default=None)    
     e_estado: str = Field(max_length=50)
-    e_fecha_envio: datetime = Field(default=None)        
+    e_fecha_envio: datetime = Field(nullable=True, default=None)        
     e_c_id: Optional[int] = Field(default=None, foreign_key="compra.c_id")
     e_compra :Optional[CompraModel] = Relationship(back_populates="c_envio")
 class UsuarioModel(SQLModel, table=True):

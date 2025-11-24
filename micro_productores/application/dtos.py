@@ -23,6 +23,8 @@ class RegistrarProductorEnGremioDTO(BaseModel):
 
 class CrearGremioDTO(BaseModel):    
     nombre: str = Field(..., min_length=3, max_length=100, json_schema_extra={"example": "Gremio de Agricultores", "description": "Nombre del gremio a crear"})
+    descripcion: str = Field(..., min_length=10, max_length=500, json_schema_extra={"example": "Gremio dedicado a la agricultura sostenible", "description": "Descripción del gremio a crear"})
+    ubicacion: str = Field(..., min_length=5, max_length=200, json_schema_extra={"example": "Vereda Santa Barbara, Popayán", "description": "Ubicación del gremio a crear"})
 
 class ProductorResponseDTO(BaseModel):
     id: int
