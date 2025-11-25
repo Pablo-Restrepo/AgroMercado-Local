@@ -16,10 +16,10 @@ spring:
                     methods: [POST]
                   - path: /api/usuarios/login
                     methods: [POST]
-        - id: sales-microservice
-          uri: lb://sales-microservice     
+        - id: micro-compras
+          uri: lb://micro-compras     
           predicates:
-              - Path=/api/sales**
+              - Path=/api/compras/**
           filters:
             - name: jwtAuthenticationFilter    
         - id: micro-productores
