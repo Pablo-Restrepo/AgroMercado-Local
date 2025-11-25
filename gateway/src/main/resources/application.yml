@@ -16,14 +16,14 @@ spring:
                     methods: [POST]
                   - path: /api/usuarios/login
                     methods: [POST]
-        - id: micro-compras
-          uri: lb://micro-compras     
+        - id: purchases-microservice
+          uri: lb://purchases-microservice     
           predicates:
               - Path=/api/compras/**
           filters:
             - name: jwtAuthenticationFilter    
-        - id: micro-productores
-          uri: lb://micro-productores
+        - id: productors-microservice
+          uri: lb://productors-microservice
           predicates:
             - Path=/api/productores/**,/api/gremios/**
           filters:
