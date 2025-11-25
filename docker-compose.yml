@@ -107,10 +107,11 @@ services:
       PRODUCTORS_QUEUE: productors_registrations
       SECRET_KEY: ${SECRET_KEY}
       ALGORITHM: HS256
-      EUREKA_APP_NAME: micro-productores
+      EUREKA_APP_NAME: productors-microservice
       EUREKA_SERVER_URL: http://eureka-server:8761/eureka/
       EUREKA_INSTANCE_HOST: micro-productores
       EUREKA_INSTANCE_PORT: 8000
+      GATEWAY_HOST: gateway:8090
     depends_on:
       mysql:
         condition: service_healthy
@@ -122,7 +123,6 @@ services:
       - microservices-network
     restart: on-failure
 
-  # Microservicio Users (ajusta según tu estructura)
   micro-users:
     build:
       context: ./microservice_user
@@ -200,6 +200,37 @@ services:
         condition: service_healthy
     networks:
       - microservices-network
+  micro-compras:
+    build:
+      context: ./micro_compras
+      dockerfile: Dockerfile
+    container_name: micro-compras
+    ports:
+      - "8003:8003"
+    environment:
+      RABBIT_URL: amqp://guest:guest@rabbitmq:5672/
+      DATABASE_URL: mysql+aiomysql://root:root@mysql:3306/microservice_compras_bd
+      USUARIO_QUEUE_NAME: created_users
+      PRODUCTO_QUEUE_NAME: created_products
+      PRODUCTO_STOCK_QUEUE_NAME: updated_product_stock 
+      SECRET_KEY: ${SECRET_KEY}
+      ALGORITHM: HS256
+      EUREKA_APP_NAME: purchases-microservice
+      EUREKA_SERVER_URL: http://eureka-server:8761/eureka/
+      EUREKA_INSTANCE_HOST: micro-compras
+      EUREKA_INSTANCE_PORT: 8003
+      DEFAULT_ENVIO_COST: 10000.0
+      
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - microservices-network
+    restart: on-failure
 
 volumes:
   mysql-data:

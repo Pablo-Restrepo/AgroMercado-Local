@@ -15,7 +15,7 @@ class Usuario:
         self.u_email = u_email
         self.p_id = p_id
         self.u_rol = u_rol
-
+    
     def ejecutar_validaciones(self):
         for metodo in self._metodos_validacion():
             metodo()

@@ -7,6 +7,8 @@ class GremioModel(SQLModel, table=True):
 
     gre_id: Optional[int] = Field(default=None, primary_key=True)
     gre_nombre: str = Field(max_length=100)
+    gre_descripcion: str = Field(max_length=500)
+    gre_ubicacion: str = Field(max_length=200)
     gre_fecha_creacion: datetime = Field(default_factory=datetime.now)
 
     # Relación con productores

@@ -65,6 +65,7 @@ class ProductoService:
         producto_cola = {
             "id": producto_id,
             "nombre": producto_datos.p_nombre,
+            "id_gremio": productor.prod_cod_gremio,
             "unidad": producto_datos.p_unidad,
             "precio": producto_datos.p_precio,
             "stock": producto_datos.p_stock
