@@ -6,7 +6,7 @@ from infraestructure.logging import logger
 from domain.entities.producto_unitario import ProductoUnitario
 
 RABBITMQ_URL = settings.RABBIT_URL
-UPDATE_STOCK_QUEUE_NAME = settings.PRODUCT_STOCK_QUEUE_NAME
+UPDATE_STOCK_QUEUE_NAME = settings.PRODUCTO_STOCK_QUEUE_NAME
 
 def _get_connection():
     params = pika.URLParameters(RABBITMQ_URL)

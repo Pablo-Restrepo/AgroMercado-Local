@@ -28,6 +28,7 @@ class UsuarioRepository(IUsuarioRepository):
     async def save_usuario(self, usuario: Usuario):
         async with async_session() as session:
             usuario_model = UsuarioModel(
+                u_id = usuario.id,
                 u_nombre=usuario.nombre,
                 u_email=usuario.email,
                 u_es_activo=usuario.es_activo
@@ -70,6 +71,7 @@ class ProductoRepository(IProductoRepository):
     async def save_producto(self, producto):
         async with async_session() as session:
             producto_model = ProductoModel(
+                p_id=producto.id,
                 p_nombre=producto.nombre,
                 p_id_gremio=producto.id_gremio,
                 p_precio=producto.precio,

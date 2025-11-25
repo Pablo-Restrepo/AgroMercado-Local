@@ -53,8 +53,17 @@ def registrar_usuario(
         }
 
         # Encolar publicación en background para no bloquear la respuesta
-        if usuario.u_rol != RolEnum.CLIENTE:
+        if usuario.u_rol == RolEnum.PRODUCTOR_ADMIN:
             background_tasks.add_task(publish_user_registration, data)
+        elif usuario.u_rol == RolEnum.CLIENTE:
+            #Se publican los clientes para el micro de compras
+            data = {
+                "id": usuario.u_id,
+                "nombre": persona.p_nombre + " " + persona.p_apellido,
+                "email": usuario.u_email,
+                "es_activo": True
+            }
+            background_tasks.add_task(publish_user_registration, data, queue="created_users")
 
         return APIResponse(status="success", message="Usuario y persona registrados exitosamente", data=data)
     except ValueError as e:

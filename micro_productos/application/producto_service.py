@@ -56,6 +56,7 @@ class ProductoService:
         producto_cola = {
             "id": producto_id,
             "nombre": producto_datos.p_nombre,
+            "id_gremio": productor.prod_cod_gremio,
             "unidad": producto_datos.p_unidad,
             "precio": producto_datos.p_precio,
             "stock": producto_datos.p_stock
@@ -96,11 +97,11 @@ class ProductoService:
                 getattr(producto_original, campo) != getattr(producto_modificado, campo)
                 for campo in campos_a_verificar
             )
-
+            #TODO agregar el id del gremio en el producto que se envia a la cola
             if cambio:
                 producto_cola = {
                     "id": producto_id,
-                    "nombre": producto_datos.p_nombre,
+                    "nombre": producto_datos.p_nombre,                    
                     "unidad": producto_datos.p_unidad,
                     "precio": producto_datos.p_precio,
                     "stock": producto_datos.p_stock

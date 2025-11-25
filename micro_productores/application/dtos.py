@@ -11,6 +11,7 @@ class UsuarioRegistro(BaseModel):
     u_nombre_usuario: str = Field(..., max_length=50,json_schema_extra={"example": "juanperez", "description": "Nombre de usuario del nuevo usuario"})
     u_contrasenia: str = Field(..., min_length=8, max_length=100,json_schema_extra={"example": "contraseniaSegura123", "description": "Contraseña del nuevo usuario"})
     u_email: str = Field(..., max_length=100,json_schema_extra={"example": "juan.perez@example.com", "description": "Email del nuevo usuario"})
+    u_rol:str = Field(default="productor-afiliado", max_length=30,json_schema_extra={"example": "productor-afiliado", "description": "Rol del nuevo usuario"})
     persona: PersonaRegistro
     
 class RegistrarProductorEnGremioDTO(BaseModel):    
@@ -39,6 +40,8 @@ class ProductorResponseDTO(BaseModel):
 class GremioResponseDTO(BaseModel):
     id: int
     nombre: str
+    descripcion: str
+    ubicacion: str
     productores: list[ProductorResponseDTO] = []    
 
 class CrearProductorDTO(BaseModel):

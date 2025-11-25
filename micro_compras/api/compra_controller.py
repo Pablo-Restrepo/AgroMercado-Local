@@ -24,7 +24,7 @@ async def get_compra(compra_id: int, svc: CompraService = Depends(get_compra_ser
 @router.get("/usuario/{usuario_id}", status_code=200)
 async def get_compras_by_usuario(usuario_id: int, svc: CompraService = Depends(get_compra_service), current_user: dict = Depends(get_current_user)):
     """Obtiene todas las compras del usuario autenticado."""
-    if current_user.get('id') != usuario_id:
+    if current_user.get('user_id') != usuario_id:
         raise HTTPException(
             status_code=403,
             detail="No tiene permisos para ver estas compras."

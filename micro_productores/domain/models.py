@@ -39,7 +39,7 @@ class Productor(Persona):
 
 class Gremio:        
     def __init__(self, id:int | None, nombre:str, descripcion:str, ubicacion:str, productores:List[Productor] = None):
-        if not nombre or descripcion or ubicacion:
+        if not nombre or not descripcion or not ubicacion:
             raise ValueError("Todos los campos son obligatorios")
         self.id = id
         self.nombre = nombre

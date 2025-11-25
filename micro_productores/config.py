@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     EUREKA_INSTANCE_PORT: int 
     EUREKA_INSTANCE_HOST: str 
     EUREKA_SERVER_URL: str 
+    GATEWAY_HOST:str
     model_config = ConfigDict(
         env_file='.env',
         extra='ignore'

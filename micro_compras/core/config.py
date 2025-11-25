@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = 'mysql+aiomysql://root:root@localhost/microservice_compras_bd'
     USUARIO_QUEUE_NAME: str = 'usuario_queue' # Nombre de la cola para recibir usuarios desde el micro de usuarios
     PRODUCTO_QUEUE_NAME: str = 'producto_queue' # Nombre de la cola para recibir productos desde el micro de productos
-    PRODUCT_STOCK_QUEUE_NAME: str = 'update_product_stock' # Nombre de la cola para actualizar stock en el micro de productos
+    PRODUCTO_STOCK_QUEUE_NAME: str = 'updated_product_stock' # Nombre de la cola para actualizar stock en el micro de productos
     SECRET_KEY: str
     ALGORITHM: str = 'HS256'
     EUREKA_APP_NAME: str = 'micro_compras'
