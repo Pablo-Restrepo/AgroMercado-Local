@@ -1,12 +1,15 @@
 
 import base64
+from typing import List
 
 from bson import Binary
-from api.esquemas import ProductoActualizacion, ProductoCompra, ProductoRegistro, ProductoConsulta, ProductorRegistroConsulta
+from api.esquemas import CategoriaConsulta, CategoriaRegistro, ProductoActualizacion, ProductoCompra, ProductoRegistro, ProductoConsulta, ProductorRegistroConsulta
 from core.events import event_manager
 from infrastructure.int_command_repository import IProductoCommandRepository
 from infrastructure.int_query_repository import IProductoQueryRepository
 from core.events import publisher, queue_creacion_productos, queue_actualizacion_productos
+from infrastructure.mongo_collections import Categoria
+from infrastructure.sql_models import CategoriaModel
 
 
 class ProductoService:
@@ -28,15 +31,16 @@ class ProductoService:
         """
         producto_id = await self.command_repo.save_producto(producto=producto_datos)
         productor:ProductorRegistroConsulta = await self.command_repo.get_productor(prod_id=producto_datos.prod_id)
-        
+        categoria: CategoriaModel = await self.command_repo.get_categoria(cat_id=producto_datos.cat_id)
         #construir los datos para db de mongo
         event_data = {
             "p_id": producto_id,
             "p_nombre": producto_datos.p_nombre,
-            "p_tipo": producto_datos.p_tipo,
+            "p_tipo": producto_datos.cat_id,
             "p_unidad": producto_datos.p_unidad,
             "p_precio": producto_datos.p_precio,
             "p_stock": producto_datos.p_stock,
+            "p_medicinal": producto_datos.p_medicinal,
             "imagen":producto_datos.img,
             "productor": {
                 "prod_id": producto_datos.prod_id,
@@ -44,7 +48,12 @@ class ProductoService:
                 "prod_apellido": productor.prod_apellido,
                 "prod_cod_gremio":productor.prod_cod_gremio,
                 "prod_nombre_gremio": productor.prod_nombre_gremio
+            },
+            "categoria":{
+                "cat_id": categoria.cat_id,
+                "cat_nombre": categoria.cat_nombre
             }
+
         }
 
         # Notificar evento
@@ -70,42 +79,37 @@ class ProductoService:
         Actualiza los datos de un producto existente.
         Retorna el id del producto editado.
         """
-        producto_original = self.query_repo.get_producto_por_id(p_id=p_id)
         producto_id =  await self.command_repo.edit_producto(p_id, producto=producto_datos)
-        producto_modificado = self.query_repo.get_producto_por_id(p_id=producto_id)
-
-        if producto_original != producto_modificado:
-            #construir la informacion para el evento de actualizacion en mongo db
-            event_data = {
-                "p_id": producto_id,
-                "p_nombre": producto_datos.p_nombre,
-                "p_tipo": producto_datos.p_tipo,
-                "p_unidad": producto_datos.p_unidad,
-                "p_precio": producto_datos.p_precio,
-                "p_stock": producto_datos.p_stock,
-                "imagen":producto_datos.img
+        categoria: CategoriaModel = await self.command_repo.get_categoria(cat_id=producto_datos.cat_id)
+        
+        #construir la informacion para el evento de actualizacion en mongo db
+        event_data = {
+            "p_id": producto_id,
+            "p_nombre": producto_datos.p_nombre,
+            "p_unidad": producto_datos.p_unidad,
+            "p_precio": producto_datos.p_precio,
+            "p_stock": producto_datos.p_stock,
+            "p_medicinal": producto_datos.p_medicinal,
+            "imagen":producto_datos.img,
+            "categoria": {
+                "cat_id": categoria.cat_id,
+                "cat_nombre": categoria.cat_nombre
             }
-            # Notificar evento
-            await event_manager.notify("producto_actualizado", event_data)
-            # publicar el producto en la cola
-            # solo se publica el evento a la cola si cambia alguno de estos campos
-            # nombre, unidad,precio o stock 
-            campos_a_verificar = ["p_nombre", "p_unidad", "p_precio", "p_stock"]
-
-            cambio = any(
-                getattr(producto_original, campo) != getattr(producto_modificado, campo)
-                for campo in campos_a_verificar
-            )
-
-            if cambio:
-                producto_cola = {
-                    "id": producto_id,
-                    "nombre": producto_datos.p_nombre,
-                    "unidad": producto_datos.p_unidad,
-                    "precio": producto_datos.p_precio,
-                    "stock": producto_datos.p_stock
-                }
-                await publisher.publish(message=producto_cola,routing_key=queue_actualizacion_productos)
+        }
+        # Notificar evento
+        await event_manager.notify("producto_actualizado", event_data)
+        # publicar el producto en la cola
+        # solo se publica el evento a la cola si cambia alguno de estos campos
+        # nombre, unidad,precio o stock 
+        
+        producto_cola = {
+            "id": producto_id,
+            "nombre": producto_datos.p_nombre,
+            "unidad": producto_datos.p_unidad,
+            "precio": producto_datos.p_precio,
+            "stock": producto_datos.p_stock
+        }
+        await publisher.publish(message=producto_cola,routing_key=queue_actualizacion_productos)
         return producto_id
 
     async def actualizar_stock_productos(self, productos_compra:list[ProductoCompra]) -> int:
@@ -132,8 +136,8 @@ class ProductoService:
         await event_manager.notify("producto_eliminado", p_id)
         return await self.command_repo.delete_producto(p_id=p_id)
 
-    
-
+    async def registrar_categoria(self, categoria:CategoriaRegistro) -> int:
+        return await self.command_repo.save_categoria(categoria)
     # ==========================================================
     # MÉTODOS DE CONSULTA (lectura)
     # ==========================================================
@@ -156,4 +160,28 @@ class ProductoService:
         return self.query_repo.get_producto_por_id(p_id=p_id)
 
     def listar_productos_por_productor(self, prod_id: int) -> list[ProductoConsulta]:
+        """
+            Retorna el listado de productos del productor dado
+        """
         return  self.query_repo.list_productos_por_productor(prod_id=prod_id)
+    
+    async def listar_categorias(self) ->List[CategoriaConsulta]: 
+        return await self.command_repo.get_categorias()
+
+    def listar_todos_productos_por_categoria(self,cat_id:int) -> List[ProductoConsulta]:
+        return self.query_repo.list_all_productos_por_categoria(cat_id)
+    
+    def listar_productos_por_categoria_gremio(self,gre_id:int,cat_id:int) -> List[ProductoConsulta]:
+        return self.query_repo.list_productos_por_categoria_gremio(gre_id,cat_id)
+   
+    def listar_productos_por_categoria_productor(self,prod_id:int,cat_id:int) -> List[ProductoConsulta]:
+        return self.query_repo.list_productos_por_categoria_productor(prod_id,cat_id)
+    
+    def listar_todos_productos_medicinales(self)  -> List[ProductoConsulta]:
+        return self.query_repo.list_all_productos_medicinales()
+    
+    def listar_productos_medicinales_gremio(self, gre_id:int)  -> List[ProductoConsulta]:
+        return self.query_repo.list_productos_medicinales_gremio(gre_id)
+    
+    def listar_productos_medicinales_productor(self, prod_id:int)  -> List[ProductoConsulta]:
+        return self.query_repo.list_productos_medicinales_productor(prod_id)

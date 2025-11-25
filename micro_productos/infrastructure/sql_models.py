@@ -10,7 +10,11 @@ class ProductorModel(SQLModel, table=True):
     prod_cod_gremio: int = Field(default=None)
     prod_nombre_gremio: str = Field(max_length=100)
 
-    
+class CategoriaModel(SQLModel, table=True): 
+    __tablename__ = "categoria"
+    cat_id: int = Field(default=None, primary_key=True)
+    cat_nombre: str  = Field(max_length=100, unique=True)
+
 class ProductoModel(SQLModel, table=True):
     __tablename__ = "producto"
 
@@ -20,10 +24,11 @@ class ProductoModel(SQLModel, table=True):
     )
     p_id: int = Field(default=None, primary_key=True)
     p_nombre: str = Field(max_length=100)
-    p_tipo:str = Field(max_length=100)
+    cat_id:int = Field(default=None, foreign_key="categoria.cat_id")
     p_unidad:str = Field(max_length=100)
     prod_id:int = Field(default=None, foreign_key="productor.prod_id")
     p_precio:float = Field(default=0)
     p_stock: int  = Field(default=0)
     p_estado: bool = Field(default=True)
+    p_medicinal: bool = Field(default=False)
     imagen: Optional[bytes] = Field(default=None, sa_type=LargeBinary(length=(2**24)))

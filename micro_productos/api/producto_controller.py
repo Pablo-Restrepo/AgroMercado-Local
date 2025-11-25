@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
 
 from core.auth_middleware import get_current_user
-from .esquemas import ProductoRegistro, ProductoConsulta, ProductoActualizacion, RolEnum
+from .esquemas import CategoriaConsulta, ProductoRegistro, ProductoConsulta, ProductoActualizacion, RolEnum
 from application.producto_service import ProductoService
 
 
@@ -13,15 +13,23 @@ class ProductoController:
         self.router = APIRouter(prefix="/api/productos", tags=["Productos"])
         self.service = service
 
-        # Mapear rutas a métodos
+        # ---Mapear rutas a métodos---
+        # rutas de comandos
         self.router.post("/", response_model=int)(self.registrar_producto)
         self.router.put("/{p_id}", response_model=int)(self.editar_producto)
         self.router.delete("/{p_id}", response_model=int)(self.eliminar_producto)
+        # rutas de consultas
         self.router.get("/", response_model=List[ProductoConsulta])(self.listar_todos_los_productos)
         self.router.get("/gremio/{prod_cod_gremio}", response_model=List[ProductoConsulta])(self.listar_productos_por_gremio)
         self.router.get("/{p_id}", response_model=ProductoConsulta)(self.obtener_producto_por_id)
         self.router.get("/productor/{prod_id}", response_model=List[ProductoConsulta])(self.listar_por_productor)
-
+        self.router.get("/categorias/",response_model=List[CategoriaConsulta])(self.listar_categorias)
+        self.router.get("/categoria/{cat_id}",response_model=List[ProductoConsulta])(self.listar_todos_productos_por_categoria)
+        self.router.get("/productor-categoria/{prod_id}/{cat_id}",response_model=List[ProductoConsulta])(self.listar_productos_por_categoria_productor)
+        self.router.get("/gremio-categoria/{gre_id}/{cat_id}",response_model=List[ProductoConsulta])(self.listar_productos_por_categoria_gremio)
+        self.router.get("/medicinales/",response_model=List[ProductoConsulta])(self.listar_todos_productos_medicinales)
+        self.router.get("/gremio-medicinales/{gre_id}",response_model=List[ProductoConsulta])(self.listar_productos_medicinales_gremio)
+        self.router.get("/productor-medicinales/{prod_id}",response_model=List[ProductoConsulta])(self.listar_productos_medicinales_productor)
     # ==========================================================
     # MÉTODOS DE COMANDO
     # ==========================================================
@@ -90,5 +98,26 @@ class ProductoController:
     
     def listar_por_productor(self, prod_id: int):
         return self.service.listar_productos_por_productor(prod_id)
+    
+    async def listar_categorias(self) ->List[CategoriaConsulta]: 
+        return await self.service.listar_categorias()
+
+    def listar_todos_productos_por_categoria(self,cat_id:int) -> List[ProductoConsulta]:
+        return self.service.listar_todos_productos_por_categoria(cat_id)
+    
+    def listar_productos_por_categoria_gremio(self,gre_id:int,cat_id:int) -> List[ProductoConsulta]:
+        return self.service.listar_productos_por_categoria_gremio(gre_id,cat_id)
+   
+    def listar_productos_por_categoria_productor(self,prod_id:int,cat_id:int) -> List[ProductoConsulta]:
+        return self.service.listar_productos_por_categoria_productor(prod_id,cat_id)
+    
+    def listar_todos_productos_medicinales(self)  -> List[ProductoConsulta]:
+        return self.service.listar_todos_productos_medicinales()
+    
+    def listar_productos_medicinales_gremio(self, gre_id:int)  -> List[ProductoConsulta]:
+        return self.service.listar_productos_medicinales_gremio(gre_id)
+    
+    def listar_productos_medicinales_productor(self, prod_id:int)  -> List[ProductoConsulta]:
+        return self.service.listar_productos_medicinales_productor(prod_id)
     
     
