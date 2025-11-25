@@ -123,7 +123,7 @@ def productores():
 def productos_consulta():
     producto1 = ProductoConsulta(
     p_nombre="Manzanas Fuji",
-    p_tipo="Fruta",
+    cat_id="Fruta",
     p_unidad="kg",
     gre_nombre="Asociación de Fruticultores del Valle",
     p_precio=3.5,
@@ -133,7 +133,7 @@ def productos_consulta():
 
     producto2 = ProductoConsulta(
         p_nombre="Leche Deslactosada",
-        p_tipo="Lácteo",
+        cat_id="Lácteo",
         p_unidad="litro",
         gre_nombre="Cooperativa de Lácteos del Sur",
         p_precio=1.8,
@@ -143,7 +143,7 @@ def productos_consulta():
 
     producto3 = ProductoConsulta(
         p_nombre="Arroz Premium",
-        p_tipo="Grano",
+        cat_id="Grano",
         p_unidad="kg",
         gre_nombre="Gremio de Productores de Granos Andinos",
         p_precio=2.2,
@@ -153,7 +153,7 @@ def productos_consulta():
 
     producto4 = ProductoConsulta(
         p_nombre="Huevos Orgánicos",
-        p_tipo="Proteína",
+        cat_id="Proteína",
         p_unidad="docena",
         gre_nombre="Asociación de Avicultores Regionales",
         p_precio=4.0,
@@ -163,7 +163,7 @@ def productos_consulta():
 
     producto5 = ProductoConsulta(
         p_nombre="Café Molido 500g",
-        p_tipo="Bebida",
+        cat_id="Bebida",
         p_unidad="paquete",
         gre_nombre="Cooperativa Cafetera Nacional",
         p_precio=7.5,
@@ -177,7 +177,7 @@ def productos_consulta():
 def productos():
     producto1 = ProductoRegistro(
     p_nombre="Manzanas Fuji",
-    p_tipo="Fruta",
+    cat_id="Fruta",
     p_unidad="kg",
     prod_id=101,
     p_stock= 10,
@@ -187,7 +187,7 @@ def productos():
 
     producto2 = ProductoRegistro(
         p_nombre="Leche Deslactosada",
-        p_tipo="Lácteo",
+        cat_id="Lácteo",
         p_unidad="litro",
         prod_id=102,
         p_stock = 10,
@@ -197,7 +197,7 @@ def productos():
 
     producto3 = ProductoRegistro(
         p_nombre="Arroz Premium",
-        p_tipo="Grano",
+        cat_id="Grano",
         p_unidad="kg",
         prod_id=103,
         p_stock = 10,
@@ -207,7 +207,7 @@ def productos():
 
     producto4 = ProductoRegistro(
         p_nombre="Huevos Orgánicos",
-        p_tipo="Proteína",
+        cat_id="Proteína",
         p_unidad="docena",
         p_stock = 10,
         prod_id=104,
@@ -217,7 +217,7 @@ def productos():
 
     producto5 = ProductoRegistro(
         p_nombre="Café Molido 500g",
-        p_tipo="Bebida",
+        cat_id="Bebida",
         p_unidad="paquete",
         prod_id=105,
         img="iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJ",
@@ -232,7 +232,7 @@ def productos():
 def producto_actualizado():
     producto = ProductoRegistro(
                 p_nombre="Manzanas verdes",
-                p_tipo="Fruta",
+                cat_id="Fruta",
                 p_unidad="kg",
                 prod_id=101,
                 p_stock = 10,
@@ -244,7 +244,7 @@ def producto_actualizado():
 def producto_valido():
     producto1 = ProductoRegistro(
                 p_nombre="Manzanas Fuji",
-                p_tipo="Fruta",
+                cat_id="Fruta",
                 p_unidad="kg",
                 prod_id=101,
                 p_stock = 10,

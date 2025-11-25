@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
-from api.esquemas import ProductoCompra, ProductoRegistro, ProductoActualizacion, ProductorRegistroConsulta
+from api.esquemas import CategoriaConsulta, CategoriaRegistro, ProductoCompra, ProductoRegistro, ProductoActualizacion, ProductorRegistroConsulta
 
 from abc import ABC, abstractmethod
+
+from infrastructure.mongo_collections import Categoria
 
 class IProductoCommandRepository(ABC):
 
@@ -26,7 +28,23 @@ class IProductoCommandRepository(ABC):
         pass
 
     @abstractmethod
+    async def get_categoria(self, cat_id:int) -> CategoriaConsulta:
+        pass
+    
+    @abstractmethod
+    async def get_categorias(self) -> list[CategoriaConsulta]:
+        pass
+
+    @abstractmethod
     async def save_productor(self, productor: ProductorRegistroConsulta) -> int:
+        pass
+
+    @abstractmethod
+    async def save_categoria(self, categoria: CategoriaRegistro) -> int:
+        pass
+
+    @abstractmethod
+    async def get_categorias(self) -> list[CategoriaConsulta]:
         pass
 
    

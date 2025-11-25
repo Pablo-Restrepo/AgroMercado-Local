@@ -2,7 +2,7 @@ import base64
 from typing import List, Optional
 from api.esquemas import ProductoConsulta
 from infrastructure.int_query_repository import IProductoQueryRepository
-from infrastructure.mongo_collections import Producto  # Documento MongoEngine
+from infrastructure.mongo_collections import Categoria, Producto  # Documento MongoEngine
 
 class MongoQueryRepository(IProductoQueryRepository):
 
@@ -14,9 +14,11 @@ class MongoQueryRepository(IProductoQueryRepository):
             productos = Producto.objects(productor__prod_cod_gremio=prod_cod_gremio)
             return [
                 ProductoConsulta(
+                    p_id = p.p_id,
                     p_nombre=p.p_nombre,
-                    p_tipo=p.p_tipo,
+                    cat_id=p.categoria.cat_id,
                     p_unidad=p.p_unidad,
+                    p_medicinal = p.p_medicinal,
                     gre_nombre=p.productor.prod_nombre_gremio,
                     p_stock = p.p_stock,
                     img= base64.b64encode(p.imagen).decode("utf-8"),
@@ -33,9 +35,11 @@ class MongoQueryRepository(IProductoQueryRepository):
             productos = Producto.objects(productor__prod_id=prod_id)
             return [
                 ProductoConsulta(
+                    p_id = p.p_id,
                     p_nombre=p.p_nombre,
-                    p_tipo=p.p_tipo,
+                    cat_id=p.categoria.cat_id,
                     p_unidad=p.p_unidad,
+                    p_medicinal = p.p_medicinal,
                     p_stock = p.p_stock,
                     gre_nombre=p.productor.prod_nombre_gremio,
                     img= base64.b64encode(p.imagen).decode("utf-8"),
@@ -53,10 +57,12 @@ class MongoQueryRepository(IProductoQueryRepository):
             if not p:
                 return None
             return ProductoConsulta(
+                    p_id = p.p_id,
                     p_nombre=p.p_nombre,
-                    p_tipo=p.p_tipo,
+                    cat_id=p.categoria.cat_id,
                     p_unidad=p.p_unidad,
                     p_stock = p.p_stock,
+                    p_medicinal = p.p_medicinal,
                     gre_nombre=p.productor.prod_nombre_gremio,
                     img= base64.b64encode(p.imagen).decode("utf-8"),
                     p_precio=p.p_precio
@@ -70,10 +76,12 @@ class MongoQueryRepository(IProductoQueryRepository):
             productos = Producto.objects.all()
             return [
                 ProductoConsulta(
+                    p_id = p.p_id,
                     p_nombre=p.p_nombre,
-                    p_tipo=p.p_tipo,
+                    cat_id=p.categoria.cat_id,
                     p_unidad=p.p_unidad,
                     p_stock = p.p_stock,
+                    p_medicinal = p.p_medicinal,
                     gre_nombre=p.productor.prod_nombre_gremio,
                     img= base64.b64encode(p.imagen).decode("utf-8"),
                     p_precio=p.p_precio
@@ -83,3 +91,164 @@ class MongoQueryRepository(IProductoQueryRepository):
         except Exception as e:
             print(f"Error al listar todos los productos: {e}")
             return []
+    
+    def list_all_productos_por_categoria(self,cat_id:int) -> List[ProductoConsulta]:
+        """
+        Devuelve una lista de productos de la categoria dada
+        """
+        try:
+            productos = Producto.objects(categoria__cat_id=cat_id)
+            return [
+                ProductoConsulta(
+                    p_id = p.p_id,
+                    p_nombre=p.p_nombre,
+                    cat_id=p.categoria.cat_id,
+                    p_unidad=p.p_unidad,
+                    p_medicinal = p.p_medicinal,
+                    gre_nombre=p.productor.prod_nombre_gremio,
+                    p_stock = p.p_stock,
+                    img= base64.b64encode(p.imagen).decode("utf-8"),
+                    p_precio=p.p_precio
+                )
+                for p in productos
+            ]
+        except Exception as e:
+            print(f"Error al listar productos por categoria ({cat_id}): {e}")
+            return []
+    
+    def list_all_productos_medicinales(self) -> List[ProductoConsulta]:
+        """
+        Devuelve una lista de productos medicinales
+        """
+        try:
+            productos = Producto.objects(p_medicinal=True)
+            return [
+                ProductoConsulta(
+                    p_id = p.p_id,
+                    p_nombre=p.p_nombre,
+                    cat_id=p.categoria.cat_id,
+                    p_unidad=p.p_unidad,
+                    p_medicinal = p.p_medicinal,
+                    gre_nombre=p.productor.prod_nombre_gremio,
+                    p_stock = p.p_stock,
+                    img= base64.b64encode(p.imagen).decode("utf-8"),
+                    p_precio=p.p_precio
+                )
+                for p in productos
+            ]
+        except Exception as e:
+            print(f"Error al listar productos por medicionales: {e}")
+            return []
+
+
+        
+    def list_all_productos_por_categoria(self,cat_id:int) -> List[ProductoConsulta]:
+        try:
+            productos = Producto.objects(categoria__cat_id=cat_id)
+            return [
+                ProductoConsulta(
+                    p_id = p.p_id,
+                    p_nombre=p.p_nombre,
+                    cat_id=p.categoria.cat_id,
+                    p_unidad=p.p_unidad,
+                    p_medicinal = p.p_medicinal,
+                    gre_nombre=p.productor.prod_nombre_gremio,
+                    p_stock = p.p_stock,
+                    img= base64.b64encode(p.imagen).decode("utf-8"),
+                    p_precio=p.p_precio
+                )
+                for p in productos
+            ]
+        except Exception as e:
+            print(f"Error al listar productos por categoria: {e}")
+            return []
+
+    
+    def list_productos_por_categoria_gremio(self,gre_id:int,cat_id:int) -> List[ProductoConsulta]:
+        try:
+            productos = Producto.objects(categoria__cat_id=cat_id,productor__prod_cod_gremio=gre_id)
+            return [
+                ProductoConsulta(
+                    p_id = p.p_id,
+                    p_nombre=p.p_nombre,
+                    cat_id=p.categoria.cat_id,
+                    p_unidad=p.p_unidad,
+                    p_medicinal = p.p_medicinal,
+                    gre_nombre=p.productor.prod_nombre_gremio,
+                    p_stock = p.p_stock,
+                    img= base64.b64encode(p.imagen).decode("utf-8"),
+                    p_precio=p.p_precio
+                )
+                for p in productos
+            ]
+        except Exception as e:
+            print(f"Error al listar productos de la categoria {cat_id} en el gremio {gre_id}: {e}")
+            return []
+   
+    
+    def list_productos_por_categoria_productor(self,prod_id:int,cat_id:int) -> List[ProductoConsulta]:
+        try:
+            productos = Producto.objects(categoria__cat_id=cat_id,productor__prod_id=prod_id)
+            return [
+                ProductoConsulta(
+                    p_id = p.p_id,
+                    p_nombre=p.p_nombre,
+                    cat_id=p.categoria.cat_id,
+                    p_unidad=p.p_unidad,
+                    p_medicinal = p.p_medicinal,
+                    gre_nombre=p.productor.prod_nombre_gremio,
+                    p_stock = p.p_stock,
+                    img= base64.b64encode(p.imagen).decode("utf-8"),
+                    p_precio=p.p_precio
+                )
+                for p in productos
+            ]
+        except Exception as e:
+            print(f"Error al listar productos de la categoria {cat_id} del productor {prod_id}: {e}")
+            return []
+    
+    
+
+    def list_productos_medicinales_gremio(self, gre_id:int)  -> List[ProductoConsulta]:
+        try:
+            productos = Producto.objects(productor__prod_cod_gremio=gre_id, p_medicinal=True)
+            return [
+                ProductoConsulta(
+                    p_id = p.p_id,
+                    p_nombre=p.p_nombre,
+                    cat_id=p.categoria.cat_id,
+                    p_unidad=p.p_unidad,
+                    p_medicinal = p.p_medicinal,
+                    gre_nombre=p.productor.prod_nombre_gremio,
+                    p_stock = p.p_stock,
+                    img= base64.b64encode(p.imagen).decode("utf-8"),
+                    p_precio=p.p_precio
+                )
+                for p in productos
+            ]
+        except Exception as e:
+            print(f"Error al listar productos medicinales del gremio {gre_id}: {e}")
+            return []
+    
+    
+    def list_productos_medicinales_productor(self, prod_id:int)  -> List[ProductoConsulta]:
+        try:
+            productos = Producto.objects(productor__prod_id=prod_id, p_medicinal=True)
+            return [
+                ProductoConsulta(
+                    p_id = p.p_id,
+                    p_nombre=p.p_nombre,
+                    cat_id=p.categoria.cat_id,
+                    p_unidad=p.p_unidad,
+                    p_medicinal = p.p_medicinal,
+                    gre_nombre=p.productor.prod_nombre_gremio,
+                    p_stock = p.p_stock,
+                    img= base64.b64encode(p.imagen).decode("utf-8"),
+                    p_precio=p.p_precio
+                )
+                for p in productos
+            ]
+        except Exception as e:
+            print(f"Error al listar productos medicinales del productor {prod_id}: {e}")
+            return []
+
