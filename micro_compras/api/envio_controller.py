@@ -20,7 +20,7 @@ async def get_envios_by_gremio(gremio_id: int, svc: EnvioService = Depends(get_e
 @router.get("/usuario/{usuario_id}", status_code=200)
 async def get_envios_by_usuario(usuario_id: int, svc: EnvioService = Depends(get_envio_service), current_user: dict = Depends(get_current_user)):
     """Obtiene todos los envíos del usuario autenticado."""
-    if current_user.get('id') != usuario_id:
+    if current_user.get('user_id') != usuario_id:
         raise HTTPException(
             status_code=403,
             detail="No tiene permisos para ver estos envíos."
