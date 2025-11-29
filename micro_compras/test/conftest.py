@@ -1,174 +1,152 @@
 import pytest
-from unittest.mock import patch, MagicMock
-from httpx import AsyncClient, ASGITransport
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from unittest.mock import AsyncMock, MagicMock
+from datetime import datetime
 
-from infraestructure.db.modelsSQL import (
-    UsuarioModel, ProductoModel, CompraModel, 
-    ProductoUnitarioModel, EnvioModel
-)
-from sqlmodel import SQLModel
+from domain.entities.usuario import Usuario
+from domain.entities.producto import Producto
+from domain.entities.producto_unitario import ProductoUnitario
+from domain.entities.compra import Compra
+from domain.entities.envio import Envio
+from domain.entities.estado_compra import EstadoCreada, EstadoConfirmada, EstadoPagada
+from domain.entities.estado_envio import EstadoPendiente
+from application.dtos import CompraRequestDTO, ProductoUnitarioDTO, UsuarioDTO, ProductoDTO
 
-TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
+# ========== ENTIDADES DE DOMINIO ==========
 
-# Mock global de RabbitMQ para todos los tests
-@pytest.fixture(autouse=True)
-def mock_rabbitmq():
-    """Mock global de RabbitMQ que se aplica a todos los tests."""
-    with patch('infraestructure.broker.publisher_rabbitmq._get_connection') as mock_conn:
-        mock_channel = MagicMock()
-        mock_conn.return_value.channel.return_value = mock_channel
-        with patch('infraestructure.broker.publisher_rabbitmq.pika') as mock_pika:
-            mock_pika.BlockingConnection.return_value = MagicMock()
-            yield mock_conn
+@pytest.fixture
+def usuario_activo():
+    return Usuario(id=1, nombre="Juan Pérez", email="juan@example.com", es_activo=True)
 
 
 @pytest.fixture
-def auth_headers_cliente():
-    """Headers de autenticación para un cliente."""
-    return {"X-Test-Role": "cliente", "X-Test-User-Id": "1"}
+def usuario_inactivo():
+    return Usuario(id=2, nombre="María López", email="maria@example.com", es_activo=False)
 
 
 @pytest.fixture
-def auth_headers_productor():
-    """Headers de autenticación para un productor admin."""
-    return {"X-Test-Role": "productor-admin", "X-Test-User-Id": "2"}
+def producto_con_stock():
+    return Producto(id=1, nombre="Manzanas", id_gremio=1, precio=2.50, unidad="kg", stock=100)
 
 
 @pytest.fixture
-async def async_client(mock_rabbitmq):
-    """Cliente HTTP asíncrono para pruebas con DB en memoria."""
-    from fastapi import FastAPI, Request
-    from api.compra_controller import router as compra_router
-    from api.envio_controller import router as envio_router
-    from api.exceptions import register_exception_handlers
-    from core.auth_middleware import get_current_user
-    from domain.entities.usuario import RolEnum
-    from infraestructure.repositories import (
-        CompraRepository, UsuarioRepository, 
-        ProductoRepository, EnvioRepository
-    )
-    from application.services import (
-        CompraService, UsuarioService, 
-        ProductoService, EnvioService
-    )
-    import deps
-    
-    # Crear engine DENTRO del fixture async (mismo event loop)
-    engine = create_async_engine(
-        TEST_DATABASE_URL, 
-        echo=False,
-        connect_args={"check_same_thread": False}
-    )
-    
-    # Crear tablas
-    async with engine.begin() as conn:
-        await conn.run_sync(SQLModel.metadata.create_all)
-    
-    # Crear session factory
-    session_factory = async_sessionmaker(
-        engine, 
-        expire_on_commit=False, 
-        class_=AsyncSession
-    )
-    
-    # Insertar datos de prueba
-    async with session_factory() as session:
-        usuario1 = UsuarioModel(
-            u_id=1, u_nombre="Cliente Test",
-            u_email="cliente@test.com", u_es_activo=True
-        )
-        usuario2 = UsuarioModel(
-            u_id=2, u_nombre="Usuario Inactivo",
-            u_email="inactivo@test.com", u_es_activo=False
-        )
-        producto1 = ProductoModel(
-            p_id=1, p_nombre="Manzanas", p_id_gremio=1,
-            p_precio=2.50, p_unidad="kg", p_stock=100
-        )
-        producto2 = ProductoModel(
-            p_id=2, p_nombre="Naranjas", p_id_gremio=1,
-            p_precio=3.00, p_unidad="kg", p_stock=50
-        )
-        producto3 = ProductoModel(
-            p_id=3, p_nombre="Leche", p_id_gremio=2,
-            p_precio=1.50, p_unidad="litro", p_stock=200
-        )
-        session.add_all([usuario1, usuario2, producto1, producto2, producto3])
-        await session.commit()
-    
-    # Crear app
-    app = FastAPI()
-    register_exception_handlers(app)
-    
-    # Mock de autenticación
-    def mock_get_current_user(request: Request):
-        role = request.headers.get("X-Test-Role", "cliente")
-        user_id = int(request.headers.get("X-Test-User-Id", "1"))
-        role_map = {
-            "cliente": RolEnum.CLIENTE,
-            "productor-admin": RolEnum.PRODUCTOR_ADMIN,
-            "productor-afiliado": RolEnum.PRODUCTOR_AFILIADO,
-        }
-        return {
-            "id": user_id, "user_id": user_id, "sub": user_id,
-            "email": f"user{user_id}@test.com",
-            "username": f"user_{user_id}",
-            "rol": role_map.get(role, RolEnum.CLIENTE)
-        }
-    
-    # Crear repositorios y servicios
-    compra_repo = CompraRepository()
-    usuario_repo = UsuarioRepository()
-    producto_repo = ProductoRepository()
-    envio_repo = EnvioRepository()
-    
-    compra_service = CompraService(compra_repo, usuario_repo, producto_repo)
-    usuario_service = UsuarioService(usuario_repo)
-    producto_service = ProductoService(producto_repo)
-    envio_service = EnvioService(envio_repo, producto_repo)
-    
-    # Override de dependencias
-    app.dependency_overrides[get_current_user] = mock_get_current_user
-    app.dependency_overrides[deps.get_compra_service] = lambda: compra_service
-    app.dependency_overrides[deps.get_usuario_service] = lambda: usuario_service
-    app.dependency_overrides[deps.get_producto_service] = lambda: producto_service
-    app.dependency_overrides[deps.get_envio_service] = lambda: envio_service
-    
-    # Registrar routers
-    app.include_router(compra_router)
-    app.include_router(envio_router)
-    
-    # Parchear engine y session globalmente
-    with patch('infraestructure.db.engine.engine', engine):
-        with patch('infraestructure.db.engine.async_session', session_factory):
-            # Resetear singletons
-            deps._singleton_compra_repo = None
-            deps._singleton_usuario_repo = None
-            deps._singleton_producto_repo = None
-            deps._singleton_envio_repo = None
-            deps._singleton_compra_service = None
-            deps._singleton_usuario_service = None
-            deps._singleton_producto_service = None
-            deps._singleton_envio_service = None
-            
-            transport = ASGITransport(app=app)
-            async with AsyncClient(transport=transport, base_url="http://test") as client:
-                yield client
-    
-    # Cleanup
-    app.dependency_overrides.clear()
-    async with engine.begin() as conn:
-        await conn.run_sync(SQLModel.metadata.drop_all)
-    await engine.dispose()
+def producto_sin_stock():
+    return Producto(id=2, nombre="Naranjas", id_gremio=1, precio=3.00, unidad="kg", stock=0)
 
 
 @pytest.fixture
-def seed_data():
-    """Datos de prueba ya insertados por async_client."""
-    return {
-        "usuario_id": 1,
-        "usuario_inactivo_id": 2,
-        "productos": [1, 2, 3]
-    }
+def producto_unitario():
+    return ProductoUnitario(id_producto=1, cantidad=5, precio_unitario=2.50, unidad="kg")
+
+
+@pytest.fixture
+def compra_creada(usuario_activo, producto_unitario):
+    return Compra(
+        id=1,
+        id_usuario=usuario_activo.id,
+        productos=[producto_unitario],
+        fecha=datetime.now(),
+        total=12.50,
+        estado=EstadoCreada()
+    )
+
+
+@pytest.fixture
+def compra_confirmada(usuario_activo, producto_unitario):
+    return Compra(
+        id=2,
+        id_usuario=usuario_activo.id,
+        productos=[producto_unitario],
+        fecha=datetime.now(),
+        total=12.50,
+        estado=EstadoConfirmada()
+    )
+
+
+@pytest.fixture
+def compra_pagada(usuario_activo, producto_unitario):
+    return Compra(
+        id=3,
+        id_usuario=usuario_activo.id,
+        productos=[producto_unitario],
+        fecha=datetime.now(),
+        total=12.50,
+        estado=EstadoPagada()
+    )
+
+
+@pytest.fixture
+def envio_pendiente(compra_pagada):
+    return Envio(
+        id=1,
+        id_gremio=1,
+        compra=compra_pagada,
+        destino="Calle 123",
+        valor=10000.0,
+        estado=EstadoPendiente()
+    )
+
+
+# ========== DTOs ==========
+
+@pytest.fixture
+def compra_request_dto():
+    return CompraRequestDTO(
+        id_usuario=1,
+        productos=[
+            ProductoUnitarioDTO(id_producto=1, cantidad=5),
+            ProductoUnitarioDTO(id_producto=2, cantidad=3)
+        ]
+    )
+
+
+@pytest.fixture
+def usuario_dto():
+    return UsuarioDTO(id=1, nombre="Test User", email="test@example.com", es_activo=True)
+
+
+@pytest.fixture
+def producto_dto():
+    return ProductoDTO(id=1, nombre="Test Product", id_gremio=1, precio=10.0, unidad="kg", stock=50)
+
+
+# ========== MOCKS DE REPOSITORIOS ==========
+
+@pytest.fixture
+def mock_usuario_repo():
+    repo = AsyncMock()
+    repo.get_usuario_by_id = AsyncMock()
+    repo.get_usuario_by_email = AsyncMock()
+    repo.save_usuario = AsyncMock()
+    return repo
+
+
+@pytest.fixture
+def mock_producto_repo():
+    repo = AsyncMock()
+    repo.get_producto_by_id = AsyncMock()
+    repo.get_productos = AsyncMock()
+    repo.save_producto = AsyncMock()
+    return repo
+
+
+@pytest.fixture
+def mock_compra_repo():
+    repo = AsyncMock()
+    repo.save_compra = AsyncMock()
+    repo.get_compra_by_id = AsyncMock()
+    repo.get_compras = AsyncMock()
+    repo.get_compras_by_usuario = AsyncMock()
+    repo.update_compra = AsyncMock()
+    return repo
+
+
+@pytest.fixture
+def mock_envio_repo():
+    repo = AsyncMock()
+    repo.save_envio = AsyncMock()
+    repo.get_envio_by_id = AsyncMock()
+    repo.update_envio = AsyncMock()
+    repo.get_envios_by_id_gremio = AsyncMock()
+    repo.get_envios_by_usuario = AsyncMock()
+    return repo

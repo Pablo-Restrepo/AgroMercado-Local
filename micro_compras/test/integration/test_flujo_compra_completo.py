@@ -135,7 +135,7 @@ def app_with_test_db(test_engine, test_session_factory):
 
 
 @pytest.fixture
-async def async_client(app_with_test_db):
+async def integration_client(app_with_test_db):
     """Cliente HTTP asíncrono para pruebas."""
     transport = ASGITransport(app=app_with_test_db)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
