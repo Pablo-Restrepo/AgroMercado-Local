@@ -19,7 +19,7 @@ spring:
         - id: purchases-microservice
           uri: lb://purchases-microservice     
           predicates:
-              - Path=/api/compras/**
+              - Path=/api/compras/**,/api/envios/**
           filters:
             - name: jwtAuthenticationFilter    
         - id: productors-microservice
