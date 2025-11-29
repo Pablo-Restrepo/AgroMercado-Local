@@ -1,6 +1,14 @@
-Para ejecutar correctamente el micro, primero deben aplicarse las migraciones (teniendo en cuenta que ya se instalaron los requerimientos).
-Para eso, se hace: 
-1. Ingresar a mysql y correr el script "script.sql"
-2. Iniciar el micro(estando en la raiz de micro_productores): uvicorn main:app --reload
-*Importante*: Se debe tener el servicio de Rabbit MQ corriendo
+Para ejecutar los test debe tenerse un .env de esta forma:
+DATABASE_URL=sqlite+aiosqlite:///./test.db
+SECRET_KEY=your_secret_key_here
+RABBIT_URL=amqp://guest:guest@localhost:5672/
+QUEUE_NAME=task_queue
+PRODUCTORS_QUEUE=productors_queue
+ALGORITHM=HS256
+EUREKA_APP_NAME=my_app
+EUREKA_INSTANCE_PORT=8000
+EUREKA_INSTANCE_HOST=localhost
+EUREKA_SERVER_URL=http://localhost:8761/eureka/
+GATEWAY_HOST=http://localhost:8090
+
 
