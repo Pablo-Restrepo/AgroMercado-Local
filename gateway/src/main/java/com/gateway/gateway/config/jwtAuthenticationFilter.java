@@ -1,6 +1,5 @@
 package com.gateway.gateway.config;
 
-
 import java.util.List;
 
 import org.springframework.http.HttpHeaders;
@@ -12,20 +11,16 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 
-
-
-
 @Component
 public class jwtAuthenticationFilter extends AbstractGatewayFilterFactory<jwtAuthenticationFilter.Config> {
 
     @Autowired
     private jwtHandler jwtHandler;
-   
 
     public jwtAuthenticationFilter() {
         super(Config.class);
     }
-    
+
     @Override
     public GatewayFilter apply(Config config) {
         return ((exchange, chain) -> {
@@ -39,7 +34,7 @@ public class jwtAuthenticationFilter extends AbstractGatewayFilterFactory<jwtAut
 
             String authHeader = exchange.getRequest().getHeaders().get(HttpHeaders.AUTHORIZATION).get(0);
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                authHeader = authHeader.substring(7);                
+                authHeader = authHeader.substring(7);
                 try {
                     jwtHandler.validateToken(authHeader);
                     return chain.filter(exchange);
@@ -51,20 +46,18 @@ public class jwtAuthenticationFilter extends AbstractGatewayFilterFactory<jwtAut
                 exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                 return exchange.getResponse().setComplete();
             }
-            
+
         });
-        
-        
+
     }
 
-     private boolean isPublic(String path, String method, List<PublicEndpoint> publicEndpoints) {
-        if (publicEndpoints == null) return false;
+    private boolean isPublic(String path, String method, List<PublicEndpoint> publicEndpoints) {
+        if (publicEndpoints == null)
+            return false;
         AntPathMatcher pathMatcher = new AntPathMatcher();
 
-        return publicEndpoints.stream().anyMatch(endpoint ->
-                pathMatcher.match(endpoint.getPath(), path) &&
-                (endpoint.getMethods() == null || endpoint.getMethods().contains(method))
-        );
+        return publicEndpoints.stream().anyMatch(endpoint -> pathMatcher.match(endpoint.getPath(), path) &&
+                (endpoint.getMethods() == null || endpoint.getMethods().contains(method)));
     }
 
     // -------------------------------
