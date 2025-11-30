@@ -1,9 +1,6 @@
-
-
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, Mock, patch
 from pydantic import ValidationError
 import pytest
-from pytest_mock import mocker
 from api.esquemas import ProductoConsulta, ProductoRegistro, ProductorRegistroConsulta
 from application.producto_service import ProductoService
 
@@ -13,13 +10,13 @@ def producto_precio_invalido():
     Fixture que intenta crear un ProductoRegistro con datos inválidos.
     Se usa dentro de pruebas que esperan ValidationError.
     """
-    # Este diccionario viola la restriccion de que p_precio debe ser mayor a 0
     datos_invalidos = {
         "p_nombre": "Manzanas Fuji",
-        "p_tipo": "Fruta",
+        "cat_id": 1,
         "p_unidad": "kg",
         "prod_id": 101,
         "p_stock": 10,
+        "p_medicinal": False,
         "img": "/9j/4AAQSkZJRgABAQEASABIAAD//2Q==",
         "p_precio": -1  # valor invalido
     }
@@ -31,58 +28,55 @@ def producto_stock_invalido():
     Fixture que intenta crear un ProductoRegistro con datos inválidos.
     Se usa dentro de pruebas que esperan ValidationError.
     """
-    # Este diccionario viola el valor de p_stock que debe ser estrictamente mayor a 0
     datos_invalidos = {
         "p_nombre": "Manzanas Fuji",
-        "p_tipo": "Fruta",
+        "cat_id": 1,
         "p_unidad": "kg",
         "prod_id": 101,
-        "p_stock": -1,# valor incorrecto
+        "p_stock": -1,  # valor incorrecto
+        "p_medicinal": False,
         "img": "/9j/4AAQSkZJRgABAQEASABIAAD//2Q==",
         "p_precio": 100  
     }
     return datos_invalidos
 
-@pytest.mark.asyncio
-async def test_registrar_producto_precio_invalido(servicio, producto_precio_invalido):
-    with pytest.raises(ValidationError):
-        # Forzamos la validación creando el modelo explícitamente
-        producto = ProductoRegistro(**producto_precio_invalido)
-        await servicio.registrar_producto(producto)
+@pytest.fixture
+def mock_publisher():
+    """Mock del publisher de RabbitMQ"""
+    with patch('core.events.publisher.publish', new_callable=AsyncMock) as mock:
+        yield mock
 
-@pytest.mark.asyncio
-async def test_registrar_producto_stock_invalido(servicio, producto_stock_invalido):
-    with pytest.raises(ValidationError):
-        # Forzamos la validación creando el modelo explícitamente
-        producto = ProductoRegistro(**producto_stock_invalido)
-        await servicio.registrar_producto(producto)
 @pytest.fixture
 def id():
     return 1
+
 @pytest.fixture
 def prod_id(): 
     return 1
+
 @pytest.fixture
 def id_gremio():
     return 101
+
 @pytest.fixture
 def productor():
     productor1 = ProductorRegistroConsulta(
-    prod_id=1,
-    prod_nombre="Carlos",
-    prod_apellido="Ramírez",
-    prod_cod_gremio=101,
-    prod_nombre_gremio="Asociación de Fruticultores del Valle"  
+        prod_id=1,
+        prod_nombre="Carlos",
+        prod_apellido="Ramírez",
+        prod_cod_gremio=101,
+        prod_nombre_gremio="Asociación de Fruticultores del Valle"  
     )
     return productor1
+
 @pytest.fixture
 def productores():
     productor1 = ProductorRegistroConsulta(
-    prod_id=1,
-    prod_nombre="Carlos",
-    prod_apellido="Ramírez",
-    prod_cod_gremio=101,
-    prod_nombre_gremio="Asociación de Fruticultores del Valle"  
+        prod_id=1,
+        prod_nombre="Carlos",
+        prod_apellido="Ramírez",
+        prod_cod_gremio=101,
+        prod_nombre_gremio="Asociación de Fruticultores del Valle"  
     )
 
     productor2 = ProductorRegistroConsulta(
@@ -119,97 +113,113 @@ def productores():
 
     productores = [productor1, productor2, productor3, productor4, productor5]
     return productores
+
 @pytest.fixture
 def productos_consulta():
     producto1 = ProductoConsulta(
-    p_nombre="Manzanas Fuji",
-    p_tipo="Fruta",
-    p_unidad="kg",
-    gre_nombre="Asociación de Fruticultores del Valle",
-    p_precio=3.5,
-    p_stock= 10,
-    img="/9j/4AAQSkZJRgABAQEASABIAAD//2Q==" 
+        p_id=1,
+        p_nombre="Manzanas Fuji",
+        cat_id=1,
+        p_unidad="kg",
+        gre_nombre="Asociación de Fruticultores del Valle",
+        p_precio=3.5,
+        p_stock=10,
+        p_medicinal=False,
+        img="/9j/4AAQSkZJRgABAQEASABIAAD//2Q==" 
     )
 
     producto2 = ProductoConsulta(
+        p_id=2,
         p_nombre="Leche Deslactosada",
-        p_tipo="Lácteo",
+        cat_id=2,
         p_unidad="litro",
         gre_nombre="Cooperativa de Lácteos del Sur",
         p_precio=1.8,
-        p_stock= 10,
+        p_stock=10,
+        p_medicinal=False,
         img="iVBORw0KGgoAAAANSUhEUgAAAAUA//8AAABCAQEA"
     )
 
     producto3 = ProductoConsulta(
+        p_id=3,
         p_nombre="Arroz Premium",
-        p_tipo="Grano",
+        cat_id=3,
         p_unidad="kg",
         gre_nombre="Gremio de Productores de Granos Andinos",
         p_precio=2.2,
-        p_stock= 10,
+        p_stock=10,
+        p_medicinal=False,
         img="AAAFBfj42Pj4+AAAABJRU5ErkJggg=="
     )
 
     producto4 = ProductoConsulta(
+        p_id=4,
         p_nombre="Huevos Orgánicos",
-        p_tipo="Proteína",
+        cat_id=4,
         p_unidad="docena",
         gre_nombre="Asociación de Avicultores Regionales",
         p_precio=4.0,
-        p_stock= 10,
+        p_stock=10,
+        p_medicinal=False,
         img="/9j/2wCEAAgGBgcGBQgHBwcJCQgKDBQNDAsL"
     )
 
     producto5 = ProductoConsulta(
+        p_id=5,
         p_nombre="Café Molido 500g",
-        p_tipo="Bebida",
+        cat_id=5,
         p_unidad="paquete",
         gre_nombre="Cooperativa Cafetera Nacional",
         p_precio=7.5,
-        p_stock= 10,
+        p_stock=10,
+        p_medicinal=False,
         img="iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJ"
     )
 
     productos_consulta = [producto1, producto2, producto3, producto4, producto5]
     return productos_consulta
+
 @pytest.fixture
 def productos():
     producto1 = ProductoRegistro(
-    p_nombre="Manzanas Fuji",
-    p_tipo="Fruta",
-    p_unidad="kg",
-    prod_id=101,
-    p_stock= 10,
-    img="/9j/4AAQSkZJRgABAQEASABIAAD//2Q==",
-    p_precio=3.5
+        p_nombre="Manzanas Fuji",
+        cat_id=1,
+        p_unidad="kg",
+        prod_id=101,
+        p_stock=10,
+        p_medicinal=False,
+        img="/9j/4AAQSkZJRgABAQEASABIAAD//2Q==",
+        p_precio=3.5
     )
 
     producto2 = ProductoRegistro(
         p_nombre="Leche Deslactosada",
-        p_tipo="Lácteo",
+        cat_id=2,
         p_unidad="litro",
         prod_id=102,
-        p_stock = 10,
+        p_stock=10,
+        p_medicinal=False,
         img="iVBORw0KGgoAAAANSUhEUgAAAAUA//8AAABCAQEA",
         p_precio=1.8
     )
 
     producto3 = ProductoRegistro(
         p_nombre="Arroz Premium",
-        p_tipo="Grano",
+        cat_id=3,
         p_unidad="kg",
         prod_id=103,
-        p_stock = 10,
+        p_stock=10,
+        p_medicinal=False,
         img="AAAFBfj42Pj4+AAAABJRU5ErkJggg==",
         p_precio=2.2
     )
 
     producto4 = ProductoRegistro(
         p_nombre="Huevos Orgánicos",
-        p_tipo="Proteína",
+        cat_id=4,
         p_unidad="docena",
-        p_stock = 10,
+        p_stock=10,
+        p_medicinal=False,
         prod_id=104,
         img="/9j/2wCEAAgGBgcGBQgHBwcJCQgKDBQNDAsL",
         p_precio=4.0
@@ -217,13 +227,14 @@ def productos():
 
     producto5 = ProductoRegistro(
         p_nombre="Café Molido 500g",
-        p_tipo="Bebida",
+        cat_id=5,
         p_unidad="paquete",
         prod_id=105,
+        p_stock=10,
+        p_medicinal=False,
         img="iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJ",
         p_precio=7.5
     )
-
 
     productos = [producto1, producto2, producto3, producto4, producto5]
     return productos
@@ -231,29 +242,33 @@ def productos():
 @pytest.fixture
 def producto_actualizado():
     producto = ProductoRegistro(
-                p_nombre="Manzanas verdes",
-                p_tipo="Fruta",
-                p_unidad="kg",
-                prod_id=101,
-                p_stock = 10,
-                img="/9j/4AAQSkZJRgABAQEASABIAAD//2Q==",
-                p_precio=3.5
-                )
+        p_nombre="Manzanas verdes",
+        cat_id=1,
+        p_unidad="kg",
+        prod_id=101,
+        p_stock=10,
+        p_medicinal=False,
+        img="/9j/4AAQSkZJRgABAQEASABIAAD//2Q==",
+        p_precio=3.5
+    )
     return producto
+
 @pytest.fixture
 def producto_valido():
     producto1 = ProductoRegistro(
-                p_nombre="Manzanas Fuji",
-                p_tipo="Fruta",
-                p_unidad="kg",
-                prod_id=101,
-                p_stock = 10,
-                img="/9j/4AAQSkZJRgABAQEASABIAAD//2Q==",
-                p_precio=3.5
-                )
+        p_nombre="Manzanas Fuji",
+        cat_id=1,
+        p_unidad="kg",
+        prod_id=101,
+        p_stock=10,
+        p_medicinal=False,
+        img="/9j/4AAQSkZJRgABAQEASABIAAD//2Q==",
+        p_precio=3.5
+    )
     return producto1
+
 @pytest.fixture
-def servicio(productos_consulta,id):
+def servicio(productos_consulta, id):
     repo_comandos = AsyncMock()
     repo_comandos.save_producto.return_value = id
     repo_comandos.save_productor.return_value = id
@@ -268,67 +283,63 @@ def servicio(productos_consulta,id):
     return servicio
 
 @pytest.mark.asyncio
-async def test_registrar_producto(servicio,producto_valido):
-    resultado = await servicio.registrar_producto(producto_valido)
+async def test_registrar_producto_precio_invalido(servicio, producto_precio_invalido):
+    with pytest.raises(ValidationError):
+        producto = ProductoRegistro(**producto_precio_invalido)
+        await servicio.registrar_producto(producto)
 
+@pytest.mark.asyncio
+async def test_registrar_producto_stock_invalido(servicio, producto_stock_invalido):
+    with pytest.raises(ValidationError):
+        producto = ProductoRegistro(**producto_stock_invalido)
+        await servicio.registrar_producto(producto)
+
+@pytest.mark.asyncio
+async def test_registrar_producto(servicio, producto_valido, mock_publisher):
+    resultado = await servicio.registrar_producto(producto_valido)
     assert resultado == 1
 
 @pytest.mark.asyncio
-async def test_registrar_productor(servicio,productor):
+async def test_registrar_productor(servicio, productor):
     resultado = await servicio.registrar_productor(productor)
-    
     assert resultado == 1
 
 @pytest.mark.asyncio
 async def test_eliminar_producto(servicio):
     resultado = await servicio.eliminar_producto(1)
     assert resultado == 1
+
 @pytest.mark.asyncio
-async def test_editar_producto(servicio,id,producto_actualizado):
-    resultado = await servicio.editar_producto(id,producto_actualizado)
-
+async def test_editar_producto(servicio, id, producto_actualizado, mock_publisher):
+    resultado = await servicio.editar_producto(id, producto_actualizado)
     assert resultado == 1
-
 
 def test_listar_todos_los_productos(servicio, productos_consulta):
     resultado = servicio.listar_todos_los_productos()
-
     assert isinstance(resultado, list)
     assert len(resultado) == len(productos_consulta)
     assert resultado[0].p_nombre == productos_consulta[0].p_nombre
 
-
 def test_listar_productos_por_gremio(servicio, id_gremio, productos_consulta):
     resultado = servicio.listar_productos_por_gremio(id_gremio)
-
     assert resultado == productos_consulta[0]
-
 
 def test_obtener_producto_por_id(servicio, id, productos_consulta):
     resultado = servicio.obtener_producto_por_id(id)
-
     assert resultado == productos_consulta[0]
-
 
 def test_listar_productos_por_productor(servicio, prod_id, productos_consulta):
     resultado = servicio.listar_productos_por_productor(prod_id)
-
     assert resultado == productos_consulta[0]
 
-
 @pytest.mark.asyncio
-async def test_editar_producto_inexistente(servicio, producto_actualizado):
-    # Simula que el comando no encuentra el producto
+async def test_editar_producto_inexistente(servicio, producto_actualizado, mock_publisher):
     servicio.command_repo.edit_producto.return_value = 0
-
     resultado = await servicio.editar_producto(999, producto_actualizado)
-
     assert resultado == 0
 
 @pytest.mark.asyncio
 async def test_eliminar_producto_inexistente(servicio):
-    # Simula que el producto no existe
     servicio.command_repo.delete_producto.return_value = 0
-
     resultado = await servicio.eliminar_producto(999)
     assert resultado == 0

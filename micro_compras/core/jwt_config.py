@@ -1,6 +1,6 @@
 import jwt
 from jwt.exceptions import InvalidTokenError
-from config import settings
+from core.config import settings
 import base64
 
 class JWTManager:

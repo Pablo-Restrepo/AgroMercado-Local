@@ -12,7 +12,7 @@ from sqlalchemy.orm import selectinload
 class GremioRepositorySQL(IGremioRepository):
     async def agregar_gremio(self, gremio: Gremio) -> int:
         async with async_session() as session:
-            gremio_model = GremioModel(gre_nombre=gremio.nombre)
+            gremio_model = GremioModel(gre_nombre=gremio.nombre,gre_descripcion=gremio.descripcion,gre_ubicacion=gremio.ubicacion)
             session.add(gremio_model)
             await session.commit()
             await session.refresh(gremio_model)            
@@ -29,6 +29,8 @@ class GremioRepositorySQL(IGremioRepository):
                 Gremio(
                     id=g.gre_id,
                     nombre=g.gre_nombre,
+                    descripcion=g.gre_descripcion,
+                    ubicacion=g.gre_ubicacion,                    
                     productores=[
                         Productor(
                             id=p.prod_id,
@@ -66,7 +68,7 @@ class GremioRepositorySQL(IGremioRepository):
                     )
                     for p in gremio.productores
                 ]
-                return Gremio(id=gremio.gre_id, nombre=gremio.gre_nombre, productores=productores)
+                return Gremio(id=gremio.gre_id, nombre=gremio.gre_nombre,descripcion=gremio.gre_descripcion,ubicacion=gremio.gre_ubicacion,  productores=productores)
             logger.warning(f"Gremio no encontrado: {id}")
             return None
 

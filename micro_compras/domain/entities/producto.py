@@ -1,23 +1,21 @@
+"""Clase Producto que representa un producto en el sistema de micro compras."""
 class Producto:
-    def __init__(self, id: int, nombre: str, nombre_gremio: str, precio: float,unidad: str, stock: int):
-        if not id:
-            raise ValueError("El ID del producto no puede estar vacío.")
+    def __init__(self, id: int, nombre: str, id_gremio: int, precio: float,unidad: str, stock: int):
+        if not id_gremio or precio is None or not unidad or stock is None:
+            raise ValueError("Todos los campos son obligatorios.")
         self.id = id
-        self.nombre = nombre
-        if not nombre_gremio:
-            raise ValueError("El producto debe pertenecer a un gremio.")
-        self.nombre_gremio = nombre_gremio
+        self.nombre = nombre        
+        self.id_gremio = id_gremio
         if precio < 0:
             raise ValueError("El precio del producto no puede ser negativo.")        
-        self.precio = precio
-        if not unidad:
-            raise ValueError("La unidad del producto no puede estar vacía.")
+        self.precio = precio        
         self.unidad = unidad
         if stock < 0:
             raise ValueError("El stock del producto no puede ser negativo.")
         self.stock = stock
     
-    def reducir_stock(self, cantidad: int):
+    def reducir_stock(self, cantidad: int)->bool:
         if self.stock - cantidad < 0:
-            raise ValueError("El stock no puede ser negativo después de la actualización.")
+            return False
         self.stock -= cantidad
+        return True
