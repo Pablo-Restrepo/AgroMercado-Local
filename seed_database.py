@@ -38,7 +38,7 @@ def descargar_imagen_base64(url):
     """Descarga una imagen desde una URL y la convierte a base64"""
     if url in IMAGE_CACHE:
         return IMAGE_CACHE[url]
-    
+
     try:
         response = requests.get(url, timeout=10)
         if response.status_code == 200:
@@ -52,6 +52,8 @@ def descargar_imagen_base64(url):
     except requests.exceptions.RequestException as e:
         print(f"  ⚠ Error descargando imagen: {e}")
         return None
+
+
 # Datos de productores con sus gremios
 PRODUCTORES_ADMIN = [
     {
